@@ -238,7 +238,7 @@ export class CalendarComponent implements OnInit {
         workHours: wHours,
         meetingHours: mHours,
         totalHours: wHours + mHours,
-        varianceHours: 0,
+        entriesCount: wHours > 0 ? 1 : 0,
         status: isWeekend ? 'Weekend' : isHoliday ? 'Holiday' : status
       });
     }
