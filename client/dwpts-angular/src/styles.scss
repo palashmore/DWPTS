@@ -1,32 +1,28 @@
 /* ==========================================================================
-   DWPTS LUXURY ENTERPRISE DESIGN SYSTEM
-   MIDNIGHT NAVY + CHAMPAGNE GOLD + PLATINUM
+   DWPTS CENTRAL LUXURY ENTERPRISE DESIGN SYSTEM & MULTI-THEME ENGINE
    ========================================================================== */
 
-:root {
+:root, [data-theme="midnight-luxury"] {
   --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Luxury Midnight Navy Palette */
+  /* Theme: Midnight Luxury */
   --bg-app: #07111F;
   --bg-navy-deep: #0B1728;
   --bg-surface: #101E33;
   --bg-surface-elevated: #14243B;
   --bg-surface-hover: #182B45;
 
-  /* Luxury Borders */
   --border-primary: #24344B;
   --border-subtle: #1B2A40;
   --border-gold: rgba(214, 179, 106, 0.35);
 
-  /* Typography Colors */
   --text-primary: #F8FAFC;
   --text-platinum: #E8EDF5;
   --text-secondary: #AAB7C8;
   --text-muted: #718096;
   --text-gold: #F0D79A;
 
-  /* Champagne Gold Accents */
   --gold-primary: #D6B36A;
   --gold-highlight: #F0D79A;
   --gold-soft: #B99652;
@@ -35,7 +31,6 @@
   --gold-glow: 0 0 20px rgba(214, 179, 106, 0.22);
   --gold-glow-subtle: 0 0 10px rgba(214, 179, 106, 0.12);
 
-  /* Semantic Accents */
   --status-optimal-bg: rgba(52, 211, 153, 0.12);
   --status-optimal-text: #34D399;
   --status-optimal-border: rgba(52, 211, 153, 0.3);
@@ -52,20 +47,139 @@
   --status-critical-text: #F87171;
   --status-critical-border: rgba(248, 113, 113, 0.3);
 
-  /* Shadows */
   --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.55), 0 4px 10px -2px rgba(0, 0, 0, 0.4);
   --shadow-modal: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(214, 179, 106, 0.15);
 
-  /* Radius */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 18px;
   --radius-pill: 9999px;
-
-  /* Transitions */
   --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Theme 2: Royal Indigo */
+[data-theme="royal-indigo"] {
+  --bg-app: #0B0E23;
+  --bg-navy-deep: #101432;
+  --bg-surface: #171C44;
+  --bg-surface-elevated: #1F255A;
+  --bg-surface-hover: #262E6E;
+  --border-primary: #2C3574;
+  --border-subtle: #202758;
+  --border-gold: rgba(139, 92, 246, 0.45);
+  --text-primary: #F8FAFC;
+  --text-platinum: #E0E7FF;
+  --text-secondary: #A5B4FC;
+  --text-muted: #6366F1;
+  --text-gold: #C4B5FD;
+  --gold-primary: #8B5CF6;
+  --gold-highlight: #C4B5FD;
+  --gold-soft: #7C3AED;
+  --gold-gradient: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+  --gold-gradient-hover: linear-gradient(135deg, #9F7AEA 0%, #C4B5FD 100%);
+  --gold-glow: 0 0 20px rgba(139, 92, 246, 0.35);
+  --gold-glow-subtle: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+/* Theme 3: Executive Graphite */
+[data-theme="executive-graphite"] {
+  --bg-app: #0F1115;
+  --bg-navy-deep: #16191F;
+  --bg-surface: #1E222A;
+  --bg-surface-elevated: #282C37;
+  --bg-surface-hover: #323846;
+  --border-primary: #383E4D;
+  --border-subtle: #2B303C;
+  --border-gold: rgba(245, 158, 11, 0.4);
+  --text-primary: #F8FAFC;
+  --text-platinum: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-gold: #FCD34D;
+  --gold-primary: #F59E0B;
+  --gold-highlight: #FCD34D;
+  --gold-soft: #D97706;
+  --gold-gradient: linear-gradient(135deg, #F59E0B 0%, #FCD34D 100%);
+  --gold-gradient-hover: linear-gradient(135deg, #FBBF24 0%, #FDE68A 100%);
+  --gold-glow: 0 0 20px rgba(245, 158, 11, 0.3);
+  --gold-glow-subtle: 0 0 10px rgba(245, 158, 11, 0.15);
+}
+
+/* Theme 4: Ocean Luxe */
+[data-theme="ocean-luxe"] {
+  --bg-app: #041525;
+  --bg-navy-deep: #082038;
+  --bg-surface: #0E2C4A;
+  --bg-surface-elevated: #143A60;
+  --bg-surface-hover: #1A4774;
+  --border-primary: #1E5184;
+  --border-subtle: #14385C;
+  --border-gold: rgba(6, 182, 212, 0.45);
+  --text-primary: #F8FAFC;
+  --text-platinum: #E0F2FE;
+  --text-secondary: #7DD3FC;
+  --text-muted: #0284C7;
+  --text-gold: #67E8F9;
+  --gold-primary: #06B6D4;
+  --gold-highlight: #67E8F9;
+  --gold-soft: #0891B2;
+  --gold-gradient: linear-gradient(135deg, #06B6D4 0%, #38BDF8 100%);
+  --gold-gradient-hover: linear-gradient(135deg, #22D3EE 0%, #7DD3FC 100%);
+  --gold-glow: 0 0 20px rgba(6, 182, 212, 0.35);
+  --gold-glow-subtle: 0 0 10px rgba(6, 182, 212, 0.2);
+}
+
+/* Theme 5: Emerald Elite */
+[data-theme="emerald-elite"] {
+  --bg-app: #061A14;
+  --bg-navy-deep: #0A261E;
+  --bg-surface: #10362B;
+  --bg-surface-elevated: #16483A;
+  --bg-surface-hover: #1D5B4A;
+  --border-primary: #236B57;
+  --border-subtle: #154537;
+  --border-gold: rgba(16, 185, 129, 0.45);
+  --text-primary: #F8FAFC;
+  --text-platinum: #D1FAE5;
+  --text-secondary: #6EE7B7;
+  --text-muted: #059669;
+  --text-gold: #A7F3D0;
+  --gold-primary: #10B981;
+  --gold-highlight: #6EE7B7;
+  --gold-soft: #059669;
+  --gold-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  --gold-gradient-hover: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%);
+  --gold-glow: 0 0 20px rgba(16, 185, 129, 0.35);
+  --gold-glow-subtle: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
+/* Theme 6: Platinum Light */
+[data-theme="platinum-light"] {
+  --bg-app: #F1F5F9;
+  --bg-navy-deep: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #F8FAFC;
+  --bg-surface-hover: #EDF2F7;
+  --border-primary: #CBD5E1;
+  --border-subtle: #E2E8F0;
+  --border-gold: rgba(185, 150, 82, 0.4);
+  --text-primary: #0F172A;
+  --text-platinum: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-gold: #996B1E;
+  --gold-primary: #B99652;
+  --gold-highlight: #D6B36A;
+  --gold-soft: #8C6F34;
+  --gold-gradient: linear-gradient(135deg, #B99652 0%, #D6B36A 100%);
+  --gold-gradient-hover: linear-gradient(135deg, #C9A967 0%, #E5C37A 100%);
+  --gold-glow: 0 4px 15px rgba(185, 150, 82, 0.25);
+  --gold-glow-subtle: 0 2px 8px rgba(185, 150, 82, 0.15);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-modal: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
 
 * {
@@ -74,7 +188,9 @@
   padding: 0;
 }
 
-body {
+html, body {
+  height: 100%;
+  width: 100%;
   font-family: var(--font-sans);
   background-color: var(--bg-app);
   color: var(--text-primary);
@@ -83,25 +199,13 @@ body {
   line-height: 1.5;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-app);
-}
-::-webkit-scrollbar-thumb {
-  background: #1B2A40;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #24344B;
-}
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-app); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-primary); }
 
-/* --------------------------------------------------------------------------
-   Luxury Cards
-   -------------------------------------------------------------------------- */
+/* Luxury Cards */
 .dwpts-card {
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
@@ -113,7 +217,7 @@ body {
 
   &:hover {
     box-shadow: var(--shadow-card-hover);
-    border-color: rgba(214, 179, 106, 0.2);
+    border-color: var(--border-gold);
   }
 }
 
@@ -138,9 +242,7 @@ body {
   }
 }
 
-/* --------------------------------------------------------------------------
-   Luxury Buttons
-   -------------------------------------------------------------------------- */
+/* Luxury Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -157,17 +259,9 @@ body {
   text-decoration: none;
   white-space: nowrap;
 
-  &:hover {
-    transform: translateY(-1px);
-  }
-  &:active {
-    transform: translateY(0);
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
+  &:hover { transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
   &.btn-primary {
     background: var(--gold-gradient);
@@ -188,7 +282,7 @@ body {
     &:hover {
       background: var(--bg-surface-hover);
       border-color: var(--border-gold);
-      color: #FFFFFF;
+      color: var(--text-primary);
     }
   }
 
@@ -196,26 +290,13 @@ body {
     background: var(--status-critical-bg);
     color: var(--status-critical-text);
     border-color: var(--status-critical-border);
-
-    &:hover {
-      background: rgba(248, 113, 113, 0.22);
-    }
   }
 
-  &.btn-sm {
-    padding: 6px 12px;
-    font-size: 12.5px;
-    border-radius: var(--radius-sm);
-  }
-
-  &.btn-pill {
-    border-radius: var(--radius-pill);
-  }
+  &.btn-sm { padding: 6px 12px; font-size: 12.5px; border-radius: var(--radius-sm); }
+  &.btn-pill { border-radius: var(--radius-pill); }
 }
 
-/* --------------------------------------------------------------------------
-   Luxury Form Controls
-   -------------------------------------------------------------------------- */
+/* Luxury Form Controls */
 .form-group {
   margin-bottom: 16px;
 
@@ -243,12 +324,10 @@ body {
 
     &:focus {
       border-color: var(--gold-primary);
-      box-shadow: 0 0 0 3px rgba(214, 179, 106, 0.15);
+      box-shadow: 0 0 0 3px var(--gold-glow-subtle);
       background: var(--bg-surface);
     }
-    &::placeholder {
-      color: var(--text-muted);
-    }
+    &::placeholder { color: var(--text-muted); }
   }
 
   select {
@@ -259,15 +338,10 @@ body {
     }
   }
 
-  textarea {
-    resize: vertical;
-    min-height: 72px;
-  }
+  textarea { resize: vertical; min-height: 72px; }
 }
 
-/* --------------------------------------------------------------------------
-   Data Table Luxury Styling
-   -------------------------------------------------------------------------- */
+/* Table */
 .dwpts-table-container {
   overflow-x: auto;
   border-radius: var(--radius-md);
@@ -284,7 +358,7 @@ table.dwpts-table {
   text-align: left;
 
   th {
-    background: #0B1728;
+    background: var(--bg-navy-deep);
     color: var(--text-muted);
     font-size: 10.5px;
     font-weight: 700;
@@ -307,18 +381,11 @@ table.dwpts-table {
     transition: background 0.15s ease;
   }
 
-  tr:hover td {
-    background: var(--bg-surface-hover);
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
+  tr:hover td { background: var(--bg-surface-hover); }
+  tr:last-child td { border-bottom: none; }
 }
 
-/* --------------------------------------------------------------------------
-   Status Badges with Translucent Luxury Glow
-   -------------------------------------------------------------------------- */
+/* Badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -342,14 +409,14 @@ table.dwpts-table {
     background: var(--status-optimal-bg);
     color: var(--status-optimal-text);
     border-color: var(--status-optimal-border);
-    &::before { background: var(--status-optimal-text); box-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
+    &::before { background: var(--status-optimal-text); }
   }
 
   &.status-inprogress, &.status-active {
     background: var(--status-active-bg);
     color: var(--status-active-text);
     border-color: var(--status-active-border);
-    &::before { background: var(--status-active-text); box-shadow: 0 0 6px rgba(96, 165, 250, 0.6); }
+    &::before { background: var(--status-active-text); }
   }
 
   &.status-ongoing, &.status-warning {

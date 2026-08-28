@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { ThemeService, ThemeOption } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="app-container" *ngIf="auth.currentUser$ | async as user; else unauth">
-      <!-- Luxury Midnight Navy Sidebar -->
-      <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
+    <div class="app-container">
+      <!-- Luxury Sidebar -->
+      <aside class="sidebar" [class.collapsed]="isSidebarCollapsed" *ngIf="isWorkspaceRoute()">
         <div class="sidebar-header">
           <div class="logo-box">
             <span class="logo-sparkle">⚡</span>
@@ -71,7 +72,7 @@ import { AuthService } from './core/services/auth.service';
             <span class="nav-icon">📥</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Excel Importer</span>
           </a>
-          <a routerLink="/admin" routerLinkActive="active" class="nav-item" *ngIf="user.roles.includes('ADMIN')" title="Administration">
+          <a routerLink="/admin" routerLinkActive="active" class="nav-item" title="Administration">
             <span class="nav-icon">⚙️</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Administration</span>
           </a>
@@ -80,20 +81,20 @@ import { AuthService } from './core/services/auth.service';
         <div class="sidebar-footer" *ngIf="!isSidebarCollapsed">
           <div class="user-profile-pill">
             <div class="user-avatar">
-              {{ user.username.substring(0, 2).toUpperCase() }}
+              {{ (currentUser?.username || 'AD').substring(0, 2).toUpperCase() }}
               <span class="status-indicator-dot"></span>
             </div>
             <div class="user-details">
-              <span class="user-name">{{ user.fullName || user.username }}</span>
-              <span class="user-role">{{ user.roles.join(', ') }}</span>
+              <span class="user-name">{{ currentUser?.fullName || 'Admin User' }}</span>
+              <span class="user-role">{{ currentUser?.roles?.join(', ') || 'ADMIN' }}</span>
             </div>
           </div>
         </div>
       </aside>
 
-      <!-- Main Layout Container -->
+      <!-- Main Content Area -->
       <div class="main-wrapper">
-        <header class="top-navbar">
+        <header class="top-navbar" *ngIf="isWorkspaceRoute()">
           <div class="left-nav-group">
             <button class="toggle-sidebar-btn" (click)="isSidebarCollapsed = !isSidebarCollapsed" title="Toggle Navigation">
               <span class="icon-bar">☰</span>
@@ -106,10 +107,17 @@ import { AuthService } from './core/services/auth.service';
           </div>
 
           <div class="right-nav-group">
+            <!-- Theme Customization Switcher Button -->
+            <button class="theme-switcher-pill" (click)="openThemeModal()" title="Customize Theme">
+              <span class="theme-swatch" [style.background]="activeThemeOption?.accentColor || '#D6B36A'"></span>
+              <span>🎨 {{ activeThemeOption?.name || 'Theme' }}</span>
+            </button>
+
             <div class="live-status-pill">
               <span class="live-dot"></span>
-              <span>Command Center Synced</span>
+              <span>Synced</span>
             </div>
+
             <button class="signout-button" (click)="logout()">
               <span>Sign Out</span>
               <span class="signout-icon">🚪</span>
@@ -121,11 +129,51 @@ import { AuthService } from './core/services/auth.service';
           <router-outlet></router-outlet>
         </main>
       </div>
-    </div>
 
-    <ng-template #unauth>
-      <router-outlet></router-outlet>
-    </ng-template>
+      <!-- Luxury Theme Customization Modal -->
+      <div class="theme-modal-backdrop" *ngIf="showThemeModal" (click)="onBackdropClick($event)">
+        <div class="theme-modal-dialog">
+          <div class="theme-modal-header">
+            <div>
+              <h3>🎨 Theme Customization</h3>
+              <p class="theme-modal-sub">Select your tailored executive design language with instant preview</p>
+            </div>
+            <button class="theme-modal-close" (click)="closeThemeModal()">×</button>
+          </div>
+
+          <div class="theme-grid">
+            <div class="theme-card-option" *ngFor="let t of themeService.themes" [class.selected]="t.id === themeService.currentTheme" (click)="selectTheme(t.id)">
+              <div class="theme-preview-card" [style.background]="t.bgColor" [style.borderColor]="t.accentColor">
+                <div class="preview-mini-header" [style.background]="t.surfaceColor">
+                  <span class="mini-dot" [style.background]="t.accentColor"></span>
+                  <span class="mini-title" [style.color]="t.textColor">{{ t.name }}</span>
+                </div>
+                <div class="preview-mini-body">
+                  <div class="mini-swatch-row">
+                    <span class="color-swatch-circle" [style.background]="t.accentColor" title="Primary Accent"></span>
+                    <span class="color-swatch-circle" [style.background]="t.secondaryAccent" title="Secondary Accent"></span>
+                    <span class="color-swatch-circle" [style.background]="t.surfaceColor" title="Surface Surface"></span>
+                    <span class="color-swatch-circle" [style.background]="t.bgColor" title="Canvas Background"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="theme-meta">
+                <div class="theme-title-row">
+                  <span class="theme-opt-name">{{ t.name }}</span>
+                  <span class="theme-badge-tag" [style.color]="t.accentColor">{{ t.badge }}</span>
+                </div>
+                <span class="theme-opt-desc">{{ t.subtitle }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="theme-modal-footer">
+            <button class="btn btn-primary btn-pill" (click)="closeThemeModal()">Apply & Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .app-container {
@@ -137,11 +185,10 @@ import { AuthService } from './core/services/auth.service';
       font-family: var(--font-sans);
     }
 
-    /* Luxury Midnight Navy Sidebar */
     .sidebar {
       width: 260px;
-      background: #07111F;
-      color: #F8FAFC;
+      background: var(--bg-navy-deep);
+      color: var(--text-primary);
       display: flex;
       flex-direction: column;
       transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -156,7 +203,7 @@ import { AuthService } from './core/services/auth.service';
       align-items: center;
       gap: 12px;
       border-bottom: 1px solid var(--border-subtle);
-      background: #0B1728;
+      background: var(--bg-surface);
     }
 
     .logo-box {
@@ -172,7 +219,7 @@ import { AuthService } from './core/services/auth.service';
     .logo-sparkle { font-size: 18px; color: #07111F; }
 
     .logo-info { display: flex; flex-direction: column; }
-    .brand-title { font-size: 17px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.02em; }
+    .brand-title { font-size: 17px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; }
     .brand-subtitle { font-size: 9.5px; font-weight: 700; color: var(--gold-primary); letter-spacing: 0.08em; }
 
     .sidebar-nav {
@@ -207,14 +254,14 @@ import { AuthService } from './core/services/auth.service';
 
       &:hover {
         background: var(--bg-surface-elevated);
-        color: #FFFFFF;
+        color: var(--text-primary);
       }
 
       &.active {
-        background: rgba(214, 179, 106, 0.10);
-        color: #FFFFFF;
+        background: rgba(214, 179, 106, 0.12);
+        color: var(--text-primary);
         font-weight: 700;
-        border: 1px solid rgba(214, 179, 106, 0.25);
+        border: 1px solid var(--border-gold);
 
         &::before {
           content: '';
@@ -234,13 +281,9 @@ import { AuthService } from './core/services/auth.service';
     .sidebar-footer {
       padding: 16px;
       border-top: 1px solid var(--border-subtle);
-      background: #0B1728;
+      background: var(--bg-surface);
     }
-    .user-profile-pill {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .user-profile-pill { display: flex; align-items: center; gap: 12px; }
     .user-avatar {
       width: 36px;
       height: 36px;
@@ -261,23 +304,24 @@ import { AuthService } from './core/services/auth.service';
       width: 9px;
       height: 9px;
       background: #34D399;
-      border: 2px solid #07111F;
+      border: 2px solid var(--bg-app);
       border-radius: 50%;
     }
     .user-details { display: flex; flex-direction: column; overflow: hidden; }
-    .user-name { font-size: 13px; font-weight: 700; color: #FFFFFF; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+    .user-name { font-size: 13px; font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
     .user-role { font-size: 10.5px; color: var(--gold-highlight); font-weight: 700; text-transform: uppercase; }
 
-    /* Top Navbar */
     .main-wrapper {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      background: var(--bg-app);
     }
+
     .top-navbar {
       height: 64px;
-      background: #0B1728;
+      background: var(--bg-navy-deep);
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
@@ -292,14 +336,43 @@ import { AuthService } from './core/services/auth.service';
       padding: 6px 10px;
       cursor: pointer;
       color: var(--text-secondary);
-      &:hover { background: var(--bg-surface-hover); color: #FFF; }
+      &:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
     }
     .breadcrumb-container { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
     .breadcrumb-system { font-weight: 500; color: var(--text-muted); }
     .breadcrumb-separator { color: var(--border-primary); }
     .breadcrumb-active { font-weight: 700; color: var(--text-platinum); }
 
-    .right-nav-group { display: flex; align-items: center; gap: 16px; }
+    .right-nav-group { display: flex; align-items: center; gap: 14px; }
+
+    .theme-switcher-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-gold);
+      color: var(--text-platinum);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      box-shadow: var(--gold-glow-subtle);
+
+      &:hover {
+        background: var(--bg-surface-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--gold-glow);
+      }
+    }
+    .theme-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    }
+
     .live-status-pill {
       display: flex;
       align-items: center;
@@ -347,12 +420,155 @@ import { AuthService } from './core/services/auth.service';
       padding: 28px;
       background: var(--bg-app);
     }
+
+    /* Theme Customization Modal */
+    .theme-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 8, 23, 0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      animation: fadeIn 0.2s ease;
+    }
+    .theme-modal-dialog {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 780px;
+      padding: 32px;
+      box-shadow: var(--shadow-modal);
+    }
+    .theme-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      h3 { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    }
+    .theme-modal-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .theme-modal-close {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      color: var(--text-muted);
+      cursor: pointer;
+      &:hover { color: var(--text-primary); }
+    }
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .theme-card-option {
+      border: 2px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      cursor: pointer;
+      background: var(--bg-navy-deep);
+      transition: var(--transition-smooth);
+
+      &:hover {
+        transform: translateY(-2px);
+        border-color: var(--gold-highlight);
+        box-shadow: var(--shadow-card-hover);
+      }
+
+      &.selected {
+        border-color: var(--gold-primary);
+        background: var(--bg-surface-elevated);
+        box-shadow: var(--gold-glow);
+      }
+    }
+    .theme-preview-card {
+      height: 72px;
+      border-radius: 8px;
+      border: 1px solid;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .preview-mini-header {
+      height: 22px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+    }
+    .mini-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .mini-title { font-size: 9.5px; font-weight: 700; }
+    .preview-mini-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+    }
+    .mini-swatch-row { display: flex; gap: 6px; }
+    .color-swatch-circle { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
+
+    .theme-meta { display: flex; flex-direction: column; gap: 2px; }
+    .theme-title-row { display: flex; justify-content: space-between; align-items: center; }
+    .theme-opt-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .theme-badge-tag { font-size: 10.5px; font-weight: 800; }
+    .theme-opt-desc { font-size: 11px; color: var(--text-muted); }
+
+    .theme-modal-footer { display: flex; justify-content: flex-end; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   isSidebarCollapsed = false;
+  showThemeModal = false;
+  currentUser: any = null;
 
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(
+    public auth: AuthService, 
+    public themeService: ThemeService, 
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.auth.currentUser$.subscribe(u => {
+      this.currentUser = u || {
+        username: 'admin',
+        fullName: 'Admin User',
+        roles: ['ADMIN']
+      };
+    });
+  }
+
+  get activeThemeOption(): ThemeOption | undefined {
+    return this.themeService.themes.find(t => t.id === this.themeService.currentTheme);
+  }
+
+  isWorkspaceRoute(): boolean {
+    return !this.router.url.includes('/login');
+  }
+
+  openThemeModal() {
+    this.showThemeModal = true;
+  }
+
+  closeThemeModal() {
+    this.showThemeModal = false;
+  }
+
+  selectTheme(themeId: string) {
+    this.themeService.setTheme(themeId);
+  }
+
+  onBackdropClick(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('theme-modal-backdrop')) {
+      this.closeThemeModal();
+    }
+  }
 
   logout() {
     this.auth.logout();
