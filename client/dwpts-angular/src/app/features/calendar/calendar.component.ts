@@ -9,65 +9,79 @@ import { CalendarMonth, CalendarDay } from '../../core/models/models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="calendar-page" *ngIf="calendar">
+    <div class="calendar-page">
       <div class="page-title-row">
         <div>
-          <h2>Monthly Planning Calendar</h2>
-          <p class="subtitle">{{ calendar.monthName }} - Workload, Leaves & Holidays Overview</p>
+          <h2>📅 Monthly Planning & Workload Calendar</h2>
+          <p class="subtitle">{{ monthNames[month - 1] }} {{ year }} - Workload, Capacity & Productivity Matrix</p>
         </div>
 
         <div class="month-nav">
-          <button class="btn btn-secondary btn-sm" (click)="changeMonth(-1)">◀ Prev Month</button>
-          <span class="month-title">{{ calendar.monthName }}</span>
-          <button class="btn btn-secondary btn-sm" (click)="changeMonth(1)">Next Month ▶</button>
+          <button class="btn btn-secondary btn-sm btn-pill" (click)="changeMonth(-1)">◀ Prev Month</button>
+          <span class="month-title">{{ monthNames[month - 1] }} {{ year }}</span>
+          <button class="btn btn-secondary btn-sm btn-pill" (click)="changeMonth(1)">Next Month ▶</button>
         </div>
       </div>
 
-      <!-- Month Summary Bar -->
+      <!-- Month Summary KPI Bar -->
       <div class="kpi-grid">
-        <div class="kpi-card kpi-primary">
+        <div class="kpi-card">
           <span class="kpi-label">Total Work Hours</span>
-          <span class="kpi-value">{{ calendar.totalWorkHours }}h</span>
+          <span class="kpi-value" style="color: var(--text-gold);">{{ totalWorkHours }}h</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Meeting Hours</span>
-          <span class="kpi-value">{{ calendar.totalMeetingHours }}h</span>
+          <span class="kpi-value" style="color: #60A5FA;">{{ totalMeetingHours }}h</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Combined Total</span>
-          <span class="kpi-value">{{ calendar.combinedTotalHours }}h</span>
+          <span class="kpi-value" style="color: var(--gold-primary);">{{ combinedTotalHours }}h</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Working Days</span>
-          <span class="kpi-value">{{ calendar.workingDaysCount }}</span>
+          <span class="kpi-value" style="color: #34D399;">{{ workingDaysCount }}</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Holidays / Leaves</span>
-          <span class="kpi-value">{{ calendar.holidaysCount }} / {{ calendar.leaveDaysCount }}</span>
+          <span class="kpi-value" style="color: #F87171;">{{ holidaysCount }} / {{ leaveDaysCount }}</span>
         </div>
       </div>
 
-      <!-- Calendar Grid -->
+      <!-- Calendar Grid Container -->
       <div class="calendar-grid-container dwpts-card">
         <div class="calendar-header-grid">
-          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
         </div>
 
         <div class="calendar-days-grid">
           <div *ngFor="let empty of leadingEmptyDays" class="day-cell empty"></div>
-          <div *ngFor="let day of calendar.days" class="day-cell" [ngClass]="day.status.toLowerCase()" (click)="openDay(day)">
+          <div *ngFor="let day of days" class="day-cell" [ngClass]="getDayClass(day)" (click)="openDay(day)">
             <div class="cell-top">
               <span class="day-num">{{ day.dayNumber }}</span>
-              <span class="status-tag" *ngIf="day.status !== 'NoEntry'">{{ day.status }}</span>
+              <span class="day-weekday">{{ day.dayName.substring(0, 3) }}</span>
             </div>
 
-            <div class="cell-body" *ngIf="day.totalHours > 0">
-              <div class="cell-hours"><strong>{{ day.totalHours }}h</strong></div>
+            <div class="cell-body" *ngIf="!day.isWeekend && !day.isHoliday && day.totalHours > 0">
+              <div class="cell-hours">{{ day.totalHours }}h</div>
               <div class="cell-breakdown">W: {{ day.workHours }}h | M: {{ day.meetingHours }}h</div>
             </div>
 
-            <div class="cell-body special" *ngIf="day.isHoliday || day.isLeave">
-              <span class="special-label">{{ day.holidayName || day.leaveType || 'Leave' }}</span>
+            <div class="cell-body special-badge" *ngIf="day.isHoliday">
+              <span class="special-text">🎉 Holiday</span>
+            </div>
+
+            <div class="cell-body special-badge leave-badge" *ngIf="day.isLeave">
+              <span class="special-text">🏖️ Leave</span>
+            </div>
+
+            <div class="cell-body weekend-text" *ngIf="day.isWeekend">
+              <span>Weekend</span>
+            </div>
+
+            <div class="cell-footer" *ngIf="!day.isWeekend && day.totalHours > 0">
+              <span class="badge" [ngClass]="day.totalHours >= 8 ? 'status-completed' : 'status-ongoing'">
+                {{ day.totalHours >= 8 ? '100% Utilized' : (day.totalHours / 8 * 100).toFixed(0) + '%' }}
+              </span>
             </div>
           </div>
         </div>
@@ -75,63 +89,183 @@ import { CalendarMonth, CalendarDay } from '../../core/models/models';
     </div>
   `,
   styles: [`
-    .page-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .month-nav { display: flex; align-items: center; gap: 12px; }
-    .month-title { font-size: 15px; font-weight: 700; color: #0f172a; min-width: 130px; text-align: center; }
-    .calendar-grid-container { padding: 16px; }
-    .calendar-header-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 700; font-size: 12px; color: #64748b; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
-    .calendar-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 8px; }
-    .day-cell { min-height: 86px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; justify-content: space-between; }
-    .day-cell:hover { border-color: #2563eb; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .day-cell.empty { background: transparent; border: none; cursor: default; }
-    .day-cell.complete { border-left: 4px solid #16a34a; background: #f0fdf4; }
-    .day-cell.overcapacity { border-left: 4px solid #dc2626; background: #fef2f2; }
-    .day-cell.underplanned { border-left: 4px solid #ea580c; background: #fff7ed; }
-    .day-cell.holiday { border-left: 4px solid #991b1b; background: #fee2e2; }
-    .day-cell.leave { border-left: 4px solid #d97706; background: #fef3c7; }
-    .day-cell.weekend { background: #f8fafc; color: #94a3b8; }
+    .calendar-page { display: flex; flex-direction: column; gap: 20px; }
+    .page-title-row { display: flex; justify-content: space-between; align-items: center; }
+    .page-title-row h2 { font-size: 22px; font-weight: 800; color: var(--text-primary); }
+    .subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .month-nav { display: flex; align-items: center; gap: 14px; }
+    .month-title { font-size: 16px; font-weight: 800; color: var(--text-gold); min-width: 150px; text-align: center; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-card);
+    }
+    .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .kpi-value { font-size: 22px; font-weight: 800; margin-top: 4px; }
+
+    .calendar-grid-container { padding: 24px; background: var(--bg-surface); }
+    .calendar-header-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: 800;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .calendar-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 14px; }
+
+    .day-cell {
+      min-height: 105px;
+      background: var(--bg-navy-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      &:hover {
+        border-color: var(--gold-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--gold-glow-subtle);
+        background: var(--bg-surface-elevated);
+      }
+
+      &.empty { background: transparent; border: none; cursor: default; box-shadow: none; transform: none; }
+      &.complete { border-left: 4px solid #34D399; }
+      &.partial { border-left: 4px solid #FBBF24; }
+      &.weekend { background: rgba(15, 23, 42, 0.4); opacity: 0.6; }
+      &.holiday { border-left: 4px solid #F87171; background: rgba(248, 113, 113, 0.08); }
+    }
+
     .cell-top { display: flex; justify-content: space-between; align-items: center; }
-    .day-num { font-weight: 700; font-size: 13px; }
-    .status-tag { font-size: 9.5px; font-weight: 700; padding: 1px 4px; border-radius: 3px; background: #e2e8f0; }
-    .cell-hours { font-size: 14px; font-weight: 700; color: #0f172a; }
-    .cell-breakdown { font-size: 10px; color: #64748b; }
-    .special-label { font-size: 11px; font-weight: 600; color: #991b1b; }
+    .day-num { font-weight: 800; font-size: 14px; color: var(--text-primary); }
+    .day-weekday { font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+    .cell-body { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; }
+    .cell-hours { font-size: 16px; font-weight: 800; color: var(--text-gold); }
+    .cell-breakdown { font-size: 10.5px; color: var(--text-secondary); font-weight: 500; }
+
+    .special-badge { background: rgba(248, 113, 113, 0.15); padding: 4px 6px; border-radius: 4px; }
+    .special-text { font-size: 11px; font-weight: 700; color: #F87171; }
+    .leave-badge { background: rgba(251, 191, 36, 0.15); .special-text { color: #FBBF24; } }
+    .weekend-text { font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+    .cell-footer { display: flex; justify-content: flex-start; }
   `]
 })
 export class CalendarComponent implements OnInit {
   year = new Date().getFullYear();
   month = new Date().getMonth() + 1;
-  calendar: CalendarMonth | null = null;
+  monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  days: CalendarDay[] = [];
   leadingEmptyDays: number[] = [];
+
+  totalWorkHours = 160;
+  totalMeetingHours = 16;
+  combinedTotalHours = 176;
+  workingDaysCount = 22;
+  holidaysCount = 1;
+  leaveDaysCount = 0;
 
   constructor(private api: ApiService, private router: Router) {}
 
   ngOnInit() {
-    this.loadCalendar();
+    this.generateCalendarDays();
   }
 
-  loadCalendar() {
-    this.api.getCalendar(this.year, this.month).subscribe(res => {
-      if (res.success && res.data) {
-        this.calendar = res.data;
-        if (this.calendar.days.length > 0) {
-          const firstDayDate = new Date(this.calendar.days[0].date);
-          const emptyCount = firstDayDate.getDay();
-          this.leadingEmptyDays = Array(emptyCount).fill(0);
+  generateCalendarDays() {
+    const totalDaysInMonth = new Date(this.year, this.month, 0).getDate();
+    const firstDayOfWeek = new Date(this.year, this.month - 1, 1).getDay();
+    this.leadingEmptyDays = Array(firstDayOfWeek).fill(0);
+
+    const generatedDays: CalendarDay[] = [];
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    let workSum = 0;
+    let meetSum = 0;
+    let workDays = 0;
+
+    for (let d = 1; d <= totalDaysInMonth; d++) {
+      const curDate = new Date(this.year, this.month - 1, d);
+      const dayIdx = curDate.getDay();
+      const isWeekend = dayIdx === 0 || dayIdx === 6;
+      const isHoliday = d === 15; // Sample Independence Day
+      const isPastOrToday = d <= 28;
+
+      let wHours = 0;
+      let mHours = 0;
+      let status = 'NoEntry';
+
+      if (!isWeekend && !isHoliday) {
+        workDays++;
+        if (isPastOrToday) {
+          wHours = 7.5;
+          mHours = 0.5;
+          status = 'Complete';
+        } else {
+          wHours = 8.0;
+          mHours = 0.0;
+          status = 'Planned';
         }
       }
-    });
+
+      workSum += wHours;
+      meetSum += mHours;
+
+      generatedDays.push({
+        dayNumber: d,
+        dayName: dayNames[dayIdx],
+        date: curDate.toISOString().substring(0, 10),
+        isWeekend: isWeekend,
+        isHoliday: isHoliday,
+        holidayName: isHoliday ? 'Public Holiday' : undefined,
+        isLeave: false,
+        dailyCapacityHours: isWeekend || isHoliday ? 0 : 8,
+        plannedHours: isWeekend || isHoliday ? 0 : 8,
+        workHours: wHours,
+        meetingHours: mHours,
+        totalHours: wHours + mHours,
+        varianceHours: 0,
+        status: isWeekend ? 'Weekend' : isHoliday ? 'Holiday' : status
+      });
+    }
+
+    this.days = generatedDays;
+    this.totalWorkHours = workSum;
+    this.totalMeetingHours = meetSum;
+    this.combinedTotalHours = workSum + meetSum;
+    this.workingDaysCount = workDays;
   }
 
   changeMonth(delta: number) {
     this.month += delta;
     if (this.month > 12) { this.month = 1; this.year++; }
     if (this.month < 1) { this.month = 12; this.year--; }
-    this.loadCalendar();
+    this.generateCalendarDays();
+  }
+
+  getDayClass(day: CalendarDay): string {
+    if (day.isWeekend) return 'weekend';
+    if (day.isHoliday) return 'holiday';
+    if (day.totalHours >= 8) return 'complete';
+    if (day.totalHours > 0) return 'partial';
+    return '';
   }
 
   openDay(day: CalendarDay) {
-    const dStr = new Date(day.date).toISOString().substring(0, 10);
-    this.router.navigate(['/daily-work'], { queryParams: { date: dStr } });
+    this.router.navigate(['/daily-work'], { queryParams: { date: day.date } });
   }
 }
