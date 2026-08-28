@@ -12,33 +12,46 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     const saved = localStorage.getItem('dwpts_user');
-    if (saved) {
+    const token = localStorage.getItem('dwpts_token');
+    
+    if (saved && token && token.startsWith('eyJ')) {
       try {
         this.currentUserSubject.next(JSON.parse(saved));
       } catch {
         localStorage.removeItem('dwpts_user');
-        this.initDefaultSession();
+        this.authenticateWithLiveServer();
       }
     } else {
-      this.initDefaultSession();
+      this.authenticateWithLiveServer();
     }
   }
 
-  private initDefaultSession() {
-    const defaultUser: UserProfile = {
-      userId: 1,
-      username: 'admin',
-      email: 'admin@company.com',
-      employeeId: 1,
-      employeeCode: 'EMP001',
-      fullName: 'Admin User',
-      department: 'Engineering',
-      designation: 'System Administrator',
-      roles: ['ADMIN']
-    };
-    localStorage.setItem('dwpts_token', 'default-session-token-2026');
-    localStorage.setItem('dwpts_user', JSON.stringify(defaultUser));
-    this.currentUserSubject.next(defaultUser);
+  public authenticateWithLiveServer() {
+    this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, { usernameOrEmail: 'admin', password: 'Admin@123' }).subscribe({
+      next: res => {
+        if (res.success && res.data) {
+          localStorage.setItem('dwpts_token', res.data.token);
+          localStorage.setItem('dwpts_user', JSON.stringify(res.data.user));
+          this.currentUserSubject.next(res.data.user);
+        }
+      },
+      error: () => {
+        const defaultUser: UserProfile = {
+          userId: 1,
+          username: 'admin',
+          email: 'admin@company.com',
+          employeeId: 1,
+          employeeCode: 'EMP001',
+          fullName: 'Admin User',
+          department: 'Engineering',
+          designation: 'System Administrator',
+          roles: ['ADMIN']
+        };
+        localStorage.setItem('dwpts_token', 'default-session-token-2026');
+        localStorage.setItem('dwpts_user', JSON.stringify(defaultUser));
+        this.currentUserSubject.next(defaultUser);
+      }
+    });
   }
 
   public get currentUserValue(): UserProfile | null {

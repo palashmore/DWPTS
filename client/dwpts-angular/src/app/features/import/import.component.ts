@@ -25,7 +25,10 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
           <p>Supports .xlsx files with monthly sheets, AllData, and multi-row task entries</p>
           <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx,.xls" style="display: none" />
         </div>
-        <div *ngIf="isUploading" class="upload-loading">Processing and analyzing workbook sheets...</div>
+        <div *ngIf="isUploading" class="upload-loading">
+          <span class="spinner-dot"></span>
+          Processing and analyzing workbook sheets...
+        </div>
       </div>
 
       <!-- Preview Section -->
@@ -37,29 +40,29 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
               <span class="subtitle">{{ preview.totalSheets }} Sheets detected: {{ preview.detectedSheets.join(', ') }}</span>
             </div>
             <div class="import-actions">
-              <button class="btn btn-secondary" (click)="preview = null">Cancel</button>
-              <button class="btn btn-primary" [disabled]="isImporting" (click)="confirmImport()">
+              <button class="btn btn-secondary btn-pill" (click)="preview = null">Cancel</button>
+              <button class="btn btn-primary btn-pill cta-glow" [disabled]="isImporting" (click)="confirmImport()">
                 {{ isImporting ? 'Importing...' : 'Confirm & Import (' + preview.totalRows + ' rows)' }}
               </button>
             </div>
           </div>
 
           <div class="kpi-grid">
-            <div class="kpi-card kpi-primary">
+            <div class="kpi-card">
               <span class="kpi-label">Total Rows</span>
               <span class="kpi-value">{{ preview.totalRows }}</span>
             </div>
-            <div class="kpi-card kpi-success">
+            <div class="kpi-card">
               <span class="kpi-label">Valid Entries</span>
-              <span class="kpi-value">{{ preview.validRows }}</span>
+              <span class="kpi-value" style="color: #34D399;">{{ preview.validRows }}</span>
             </div>
-            <div class="kpi-card kpi-warning">
-              <span class="kpi-label">Markers / Warnings</span>
-              <span class="kpi-value">{{ preview.warningRows }}</span>
+            <div class="kpi-card">
+              <span class="kpi-label">Warnings</span>
+              <span class="kpi-value" style="color: #FBBF24;">{{ preview.warningRows }}</span>
             </div>
             <div class="kpi-card">
               <span class="kpi-label">Duplicates</span>
-              <span class="kpi-value">{{ preview.duplicateRows }}</span>
+              <span class="kpi-value" style="color: #F87171;">{{ preview.duplicateRows }}</span>
             </div>
           </div>
 
@@ -85,8 +88,8 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
                   <td>{{ r.sheetName }}</td>
                   <td>{{ r.rowIndex }}</td>
                   <td>{{ r.date ? (r.date | date:'yyyy-MM-dd') : 'Missing' }}</td>
-                  <td>{{ r.rawTask }}</td>
-                  <td><strong>{{ r.normalizedTaskNumber || '-' }}</strong></td>
+                  <td><div style="max-width: 260px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ r.rawTask }}</div></td>
+                  <td><span class="mono-badge">{{ r.normalizedTaskNumber || '-' }}</span></td>
                   <td>{{ r.category || '-' }}</td>
                   <td>{{ r.meeting || '-' }}</td>
                   <td>{{ r.workEffort }}h</td>
@@ -97,7 +100,7 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
               </tbody>
             </table>
           </div>
-          <p style="font-size: 11px; color: #94a3b8; margin-top: 10px;">Showing first 100 rows preview of {{ preview.totalRows }} total records.</p>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 12px;">Showing first 100 rows preview of {{ preview.totalRows }} total records.</p>
         </div>
       </div>
 
@@ -114,14 +117,28 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
     </div>
   `,
   styles: [`
-    .page-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .drop-zone { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 48px 24px; text-align: center; cursor: pointer; transition: all 0.2s; &:hover { border-color: #2563eb; background: #f8fafc; } }
-    .upload-icon { font-size: 42px; display: block; margin-bottom: 10px; }
-    .upload-loading { text-align: center; padding: 16px; font-weight: 600; color: #2563eb; }
+    .page-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .drop-zone {
+      border: 2px dashed var(--border-gold);
+      border-radius: var(--radius-lg);
+      padding: 56px 24px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg-navy-deep);
+      transition: var(--transition-smooth);
+      &:hover { border-color: var(--gold-highlight); background: var(--bg-surface-elevated); }
+    }
+    .upload-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+    .upload-loading { text-align: center; padding: 18px; font-weight: 700; color: var(--gold-highlight); }
     .import-actions { display: flex; gap: 10px; }
-    .result-card { background: #f0fdf4; border-color: #bbf7d0; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .kpi-card { background: var(--bg-navy-deep); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; }
+    .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .kpi-value { font-size: 22px; font-weight: 800; color: var(--text-primary); margin-top: 4px; }
+    .result-card { background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.3); }
     .result-header { display: flex; align-items: center; gap: 16px; }
     .result-icon { font-size: 32px; }
+    .cta-glow { box-shadow: var(--gold-glow-subtle); }
   `]
 })
 export class ImportComponent {
@@ -142,6 +159,8 @@ export class ImportComponent {
           this.isUploading = false;
           if (res.success && res.data) {
             this.preview = res.data;
+          } else {
+            alert('Preview error: ' + (res.message || 'Unknown error'));
           }
         },
         error: err => {
@@ -161,6 +180,8 @@ export class ImportComponent {
         if (res.success && res.data) {
           this.importResult = res.data;
           this.preview = null;
+        } else {
+          alert('Import error: ' + (res.message || 'Import failed'));
         }
       },
       error: err => {
