@@ -67,15 +67,17 @@ import { ThemeService, ThemeOption } from './core/services/theme.service';
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Leaves</span>
           </a>
 
-          <div class="nav-section-title" *ngIf="!isSidebarCollapsed">SYSTEM</div>
-          <a routerLink="/import" routerLinkActive="active" class="nav-item" title="Excel Import">
-            <span class="nav-icon">📥</span>
-            <span class="nav-label" *ngIf="!isSidebarCollapsed">Excel Importer</span>
-          </a>
-          <a routerLink="/admin" routerLinkActive="active" class="nav-item" title="Administration">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label" *ngIf="!isSidebarCollapsed">Administration</span>
-          </a>
+          <div class="system-nav-group" *ngIf="isAdmin()">
+            <div class="nav-section-title" *ngIf="!isSidebarCollapsed">SYSTEM (ADMIN ONLY)</div>
+            <a routerLink="/import" routerLinkActive="active" class="nav-item" title="Excel Import">
+              <span class="nav-icon">📥</span>
+              <span class="nav-label" *ngIf="!isSidebarCollapsed">Excel Importer</span>
+            </a>
+            <a routerLink="/admin" routerLinkActive="active" class="nav-item" title="Administration">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-label" *ngIf="!isSidebarCollapsed">Administration</span>
+            </a>
+          </div>
         </nav>
 
         <div class="sidebar-footer" *ngIf="!isSidebarCollapsed">
@@ -546,6 +548,13 @@ export class AppComponent implements OnInit {
 
   get activeThemeOption(): ThemeOption | undefined {
     return this.themeService.themes.find(t => t.id === this.themeService.currentTheme);
+  }
+
+  isAdmin(): boolean {
+    if (!this.currentUser) return true;
+    const roles: string[] = (this.currentUser.roles || []).map((r: string) => String(r).toUpperCase());
+    const username = String(this.currentUser.username || '').toLowerCase();
+    return roles.includes('ADMIN') || username.includes('admin');
   }
 
   isWorkspaceRoute(): boolean {
