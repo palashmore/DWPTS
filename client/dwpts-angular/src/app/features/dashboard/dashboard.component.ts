@@ -243,7 +243,65 @@ import { DashboardSummary } from '../../core/models/models';
   `]
 })
 export class DashboardComponent implements OnInit {
-  data: DashboardSummary | null = null;
+  data: DashboardSummary = {
+    date: new Date().toISOString().substring(0, 10),
+    capacityHours: 8.0,
+    plannedHours: 8.0,
+    actualHours: 8.0,
+    meetingHours: 0.0,
+    workHours: 8.0,
+    remainingHours: 0.0,
+    overtimeHours: 0.0,
+    utilizationPercentage: 100,
+    weeklyActualHours: 40.0,
+    monthlyActualHours: 160.0,
+    todayEntries: [
+      {
+        workEntryId: 1,
+        employeeId: 1,
+        workDate: new Date().toISOString().substring(0, 10),
+        taskNumber: '358112',
+        description: 'Task 358112: Dev : Password Reset requirement in User Account utility',
+        categoryId: 1,
+        categoryName: 'Development',
+        categoryColor: '#60A5FA',
+        meetingEffortHours: 0,
+        workEffortHours: 8,
+        totalEffortHours: 8,
+        plannedEffortHours: 8,
+        varianceHours: 0,
+        status: 'In Progress',
+        remarks: 'Initial implementation and self-tested',
+        createdAt: new Date().toISOString()
+      }
+    ],
+    dailyEffortTrend: [
+      { label: 'Mon', workHours: 7, meetingHours: 1, totalHours: 8, plannedHours: 8, capacityHours: 8 },
+      { label: 'Tue', workHours: 6, meetingHours: 2, totalHours: 8, plannedHours: 8, capacityHours: 8 },
+      { label: 'Wed', workHours: 8, meetingHours: 0, totalHours: 8, plannedHours: 8, capacityHours: 8 },
+      { label: 'Thu', workHours: 8, meetingHours: 0, totalHours: 8, plannedHours: 8, capacityHours: 8 },
+      { label: 'Fri', workHours: 7, meetingHours: 1, totalHours: 8, plannedHours: 8, capacityHours: 8 }
+    ],
+    categoryDistribution: [
+      { categoryName: 'Development', colorCode: '#60A5FA', totalHours: 32, percentage: 80 },
+      { categoryName: 'Discussion', colorCode: '#A78BFA', totalHours: 8, percentage: 20 }
+    ],
+    meetingDistribution: [],
+    teamSummary: {
+      totalMembers: 3,
+      totalCapacity: 24,
+      totalPlanned: 24,
+      totalActual: 24,
+      totalMeetings: 2,
+      totalOvertime: 0,
+      averageUtilization: 100,
+      memberUtilizations: [
+        { employeeId: 1, employeeName: 'Admin User', plannedHours: 8, actualHours: 8, meetingHours: 0, workHours: 8, utilizationPercentage: 100 },
+        { employeeId: 2, employeeName: 'Manager User', plannedHours: 8, actualHours: 8, meetingHours: 1, workHours: 7, utilizationPercentage: 100 },
+        { employeeId: 3, employeeName: 'Employee User', plannedHours: 8, actualHours: 8, meetingHours: 1, workHours: 7, utilizationPercentage: 100 }
+      ]
+    }
+  };
 
   constructor(private api: ApiService, public auth: AuthService) {}
 
