@@ -140,7 +140,10 @@ import { DailyWorkScreen, WorkEntry, Category, Meeting } from '../../core/models
               <h3>Daily Work Entries ({{ screenData?.entries?.length || 0 }})</h3>
               <span class="subtitle">Multi-task planning, categorized efforts, and progress history</span>
             </div>
-            <div class="table-header-actions">
+            <div class="table-header-actions" style="display: flex; gap: 8px;">
+              <button class="btn btn-danger btn-sm btn-pill" *ngIf="screenData?.entries && screenData!.entries.length > 0" (click)="clearAllToday()" title="Clear all tasks for this day">
+                <span>🗑️ Clear All ({{ screenData?.entries?.length }})</span>
+              </button>
               <button class="btn btn-primary btn-sm btn-pill" (click)="openAddModal()">
                 <span>+ Add Task</span>
               </button>
@@ -1172,6 +1175,17 @@ export class DailyWorkComponent implements OnInit {
       },
       error: err => this.showToast(err.error?.message || 'Duplicate failed', 'error')
     });
+  }
+
+  clearAllToday() {
+    if (!confirm(`Are you sure you want to delete all ${this.screenData?.entries?.length} entries for ${this.selectedDate}?`)) {
+      return;
+    }
+    const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem('dwpts_entries') || '[]');
+    const remaining = allEntries.filter(e => e.workDate !== this.selectedDate);
+    localStorage.setItem('dwpts_entries', JSON.stringify(remaining));
+    this.loadData();
+    this.showToast('Cleared all entries for today!', 'info');
   }
 
   deleteEntry(id: number) {
