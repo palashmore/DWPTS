@@ -6,7 +6,7 @@ import { ApiResponse, DailyWorkScreen, PagedResult, WorkEntry, WorkItem, WorkIte
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = 'https://dwpts.onrender.com/api';
 
   private readonly LS_ENTRIES = 'dwpts_entries';
   private readonly LS_CATEGORIES = 'dwpts_categories';

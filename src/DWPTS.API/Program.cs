@@ -151,6 +151,15 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/", () => Results.Ok(new 
+{ 
+    status = "Healthy", 
+    service = "DWPTS API", 
+    version = "1.0", 
+    docs = "/swagger",
+    timestamp = DateTime.UtcNow 
+}));
+
 app.Run();
 
 public partial class Program { }
