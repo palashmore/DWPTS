@@ -233,7 +233,7 @@ export class CalendarComponent implements OnInit {
         isHoliday: isHoliday,
         holidayName: isHoliday ? 'Public Holiday' : undefined,
         isLeave: false,
-        dailyCapacityHours: isWeekend || isHoliday ? 0 : 8,
+        capacityHours: isWeekend || isHoliday ? 0 : 8,
         plannedHours: isWeekend || isHoliday ? 0 : 8,
         workHours: wHours,
         meetingHours: mHours,
