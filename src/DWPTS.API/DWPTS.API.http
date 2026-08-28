@@ -1,0 +1,6 @@
+@DWPTS.API_HostAddress = http://localhost:5292
+
+GET {{DWPTS.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

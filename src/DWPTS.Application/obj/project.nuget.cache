@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "FTtbyYehJtg=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\palashm\\.gemini\\antigravity\\scratch\\DWPTS\\src\\DWPTS.Application\\DWPTS.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\palashm\\.nuget\\packages\\fluentvalidation\\11.9.2\\fluentvalidation.11.9.2.nupkg.sha512",
+    "C:\\Users\\palashm\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\11.9.2\\fluentvalidation.dependencyinjectionextensions.11.9.2.nupkg.sha512",
+    "C:\\Users\\palashm\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\2.1.0\\microsoft.extensions.dependencyinjection.abstractions.2.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}

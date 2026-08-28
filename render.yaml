@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: dwpts-api
+    env: docker
+    dockerfilePath: ./Dockerfile.api
+    plan: free
+    region: oregon
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: UseSqlite
+        value: "true"
+      - key: Jwt__Key
+        value: DWPTS_SUPER_SECRET_KEY_FOR_JWT_AUTHENTICATION_AND_SIGNING_2026
+      - key: Jwt__Issuer
+        value: DWPTS.API
+      - key: Jwt__Audience
+        value: DWPTS.Client

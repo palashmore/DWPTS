@@ -1,0 +1,15 @@
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\bin\Debug\net8.0\DWPTS.Domain.deps.json
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\bin\Debug\net8.0\DWPTS.Domain.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\bin\Debug\net8.0\DWPTS.Domain.pdb
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\bin\Debug\net8.0\DWPTS.Shared.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\bin\Debug\net8.0\DWPTS.Shared.pdb
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.csproj.AssemblyReference.cache
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.AssemblyInfoInputs.cache
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.AssemblyInfo.cs
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.csproj.CoreCompileInputs.cache
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Do.4ED2BD63.Up2Date
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\refint\DWPTS.Domain.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.pdb
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\ref\DWPTS.Domain.dll

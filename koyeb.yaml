@@ -1,0 +1,15 @@
+name: dwpts-api
+type: web
+docker:
+  dockerfile: Dockerfile.api
+regions:
+  - fra
+instance_types:
+  - nano
+env:
+  - key: ASPNETCORE_ENVIRONMENT
+    value: Production
+  - key: UseSqlite
+    value: "true"
+  - key: Jwt__Key
+    value: DWPTS_SUPER_SECRET_KEY_FOR_JWT_AUTHENTICATION_AND_SIGNING_2026

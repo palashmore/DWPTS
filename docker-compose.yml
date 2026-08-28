@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  dwpts-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: dwpts-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "1433:1433"
+    volumes:
+      - dwpts_db_data:/var/opt/mssql/data
+    networks:
+      - dwpts-network
+
+  dwpts-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: dwpts-backend-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=dwpts-db;Database=DWPTS_DB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - UseSqlite=false
+      - Jwt__Key=DWPTS_SUPER_SECRET_KEY_FOR_JWT_AUTHENTICATION_AND_SIGNING_2026
+      - Jwt__Issuer=DWPTS.API
+      - Jwt__Audience=DWPTS.Client
+    ports:
+      - "5000:8080"
+    depends_on:
+      - dwpts-db
+    networks:
+      - dwpts-network
+
+  dwpts-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: dwpts-frontend-client
+    ports:
+      - "4200:80"
+    depends_on:
+      - dwpts-api
+    networks:
+      - dwpts-network
+
+volumes:
+  dwpts_db_data:
+
+networks:
+  dwpts-network:
+    driver: bridge

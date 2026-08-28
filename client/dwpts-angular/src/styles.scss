@@ -1,0 +1,379 @@
+/* ==========================================================================
+   DWPTS LUXURY ENTERPRISE DESIGN SYSTEM
+   MIDNIGHT NAVY + CHAMPAGNE GOLD + PLATINUM
+   ========================================================================== */
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Luxury Midnight Navy Palette */
+  --bg-app: #07111F;
+  --bg-navy-deep: #0B1728;
+  --bg-surface: #101E33;
+  --bg-surface-elevated: #14243B;
+  --bg-surface-hover: #182B45;
+
+  /* Luxury Borders */
+  --border-primary: #24344B;
+  --border-subtle: #1B2A40;
+  --border-gold: rgba(214, 179, 106, 0.35);
+
+  /* Typography Colors */
+  --text-primary: #F8FAFC;
+  --text-platinum: #E8EDF5;
+  --text-secondary: #AAB7C8;
+  --text-muted: #718096;
+  --text-gold: #F0D79A;
+
+  /* Champagne Gold Accents */
+  --gold-primary: #D6B36A;
+  --gold-highlight: #F0D79A;
+  --gold-soft: #B99652;
+  --gold-gradient: linear-gradient(135deg, #D6B36A 0%, #F0D79A 100%);
+  --gold-gradient-hover: linear-gradient(135deg, #E5C37A 0%, #FDF0CA 100%);
+  --gold-glow: 0 0 20px rgba(214, 179, 106, 0.22);
+  --gold-glow-subtle: 0 0 10px rgba(214, 179, 106, 0.12);
+
+  /* Semantic Accents */
+  --status-optimal-bg: rgba(52, 211, 153, 0.12);
+  --status-optimal-text: #34D399;
+  --status-optimal-border: rgba(52, 211, 153, 0.3);
+
+  --status-active-bg: rgba(96, 165, 250, 0.12);
+  --status-active-text: #60A5FA;
+  --status-active-border: rgba(96, 165, 250, 0.3);
+
+  --status-warning-bg: rgba(251, 191, 36, 0.12);
+  --status-warning-text: #FBBF24;
+  --status-warning-border: rgba(251, 191, 36, 0.3);
+
+  --status-critical-bg: rgba(248, 113, 113, 0.12);
+  --status-critical-text: #F87171;
+  --status-critical-border: rgba(248, 113, 113, 0.3);
+
+  /* Shadows */
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.55), 0 4px 10px -2px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(214, 179, 106, 0.15);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 9999px;
+
+  /* Transitions */
+  --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+::-webkit-scrollbar-thumb {
+  background: #1B2A40;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #24344B;
+}
+
+/* --------------------------------------------------------------------------
+   Luxury Cards
+   -------------------------------------------------------------------------- */
+.dwpts-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: var(--transition-smooth);
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+    border-color: rgba(214, 179, 106, 0.2);
+  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  h2, h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Luxury Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &.btn-primary {
+    background: var(--gold-gradient);
+    color: #07111F;
+    box-shadow: var(--gold-glow-subtle);
+
+    &:hover {
+      background: var(--gold-gradient-hover);
+      box-shadow: var(--gold-glow);
+    }
+  }
+
+  &.btn-secondary {
+    background: var(--bg-surface-elevated);
+    color: var(--text-platinum);
+    border-color: var(--border-primary);
+
+    &:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-gold);
+      color: #FFFFFF;
+    }
+  }
+
+  &.btn-danger {
+    background: var(--status-critical-bg);
+    color: var(--status-critical-text);
+    border-color: var(--status-critical-border);
+
+    &:hover {
+      background: rgba(248, 113, 113, 0.22);
+    }
+  }
+
+  &.btn-sm {
+    padding: 6px 12px;
+    font-size: 12.5px;
+    border-radius: var(--radius-sm);
+  }
+
+  &.btn-pill {
+    border-radius: var(--radius-pill);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Luxury Form Controls
+   -------------------------------------------------------------------------- */
+.form-group {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg-navy-deep);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    color: var(--text-primary);
+    outline: none;
+    transition: var(--transition-smooth);
+
+    &:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 0 3px rgba(214, 179, 106, 0.15);
+      background: var(--bg-surface);
+    }
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  select {
+    color: var(--text-platinum);
+    option {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 72px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Data Table Luxury Styling
+   -------------------------------------------------------------------------- */
+.dwpts-table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-navy-deep);
+  box-shadow: var(--shadow-card);
+}
+
+table.dwpts-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  text-align: left;
+
+  th {
+    background: #0B1728;
+    color: var(--text-muted);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-primary);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-platinum);
+    font-weight: 500;
+    vertical-align: middle;
+    transition: background 0.15s ease;
+  }
+
+  tr:hover td {
+    background: var(--bg-surface-hover);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Status Badges with Translucent Luxury Glow
+   -------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  &.status-completed {
+    background: var(--status-optimal-bg);
+    color: var(--status-optimal-text);
+    border-color: var(--status-optimal-border);
+    &::before { background: var(--status-optimal-text); box-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
+  }
+
+  &.status-inprogress, &.status-active {
+    background: var(--status-active-bg);
+    color: var(--status-active-text);
+    border-color: var(--status-active-border);
+    &::before { background: var(--status-active-text); box-shadow: 0 0 6px rgba(96, 165, 250, 0.6); }
+  }
+
+  &.status-ongoing, &.status-warning {
+    background: var(--status-warning-bg);
+    color: var(--status-warning-text);
+    border-color: var(--status-warning-border);
+    &::before { background: var(--status-warning-text); }
+  }
+
+  &.status-holiday, &.status-danger {
+    background: var(--status-critical-bg);
+    color: var(--status-critical-text);
+    border-color: var(--status-critical-border);
+    &::before { background: var(--status-critical-text); }
+  }
+}
+
+.mono-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg-surface-elevated);
+  color: var(--text-gold);
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border-primary);
+}

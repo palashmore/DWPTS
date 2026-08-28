@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DWPTS.API/DWPTS.API.csproj" />
+    <Project Path="src/DWPTS.Application/DWPTS.Application.csproj" />
+    <Project Path="src/DWPTS.Domain/DWPTS.Domain.csproj" />
+    <Project Path="src/DWPTS.Infrastructure/DWPTS.Infrastructure.csproj" />
+    <Project Path="src/DWPTS.Shared/DWPTS.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DWPTS.API.Tests/DWPTS.API.Tests.csproj" />
+    <Project Path="tests/DWPTS.IntegrationTests/DWPTS.IntegrationTests.csproj" />
+    <Project Path="tests/DWPTS.UnitTests/DWPTS.UnitTests.csproj" />
+  </Folder>
+</Solution>
