@@ -1120,7 +1120,7 @@ export class DailyWorkComponent implements OnInit {
     const raw = this.entryForm.taskNumber?.trim() || '';
     if (!raw) return;
 
-    const match = raw.match(/(?:Task|Bug|Ticket|CR|#)\s*(?:No\.?\s*)?([A-Za-z0-9\-_]+)[:\s\-]*(.*)/i);
+    const match = raw.match(/(?:Task|Bug|Ticket|CR|#)\s*(?:No\.?\s*)?[:\s\-#]*([A-Za-z0-9]+)[:\s\-]*(.*)/i);
     if (match) {
       this.entryForm.taskNumber = match[1].trim();
       if (!this.entryForm.description && match[2]) {
