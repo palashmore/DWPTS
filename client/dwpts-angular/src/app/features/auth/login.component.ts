@@ -64,7 +64,7 @@ import { AuthService } from '../../core/services/auth.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+      background: radial-gradient(circle at 50% 50%, #0B1728 0%, #07111F 100%);
       padding: 24px;
       position: relative;
       overflow: hidden;
@@ -73,25 +73,25 @@ import { AuthService } from '../../core/services/auth.service';
 
     .glow-orb {
       position: absolute;
-      width: 400px;
-      height: 400px;
+      width: 450px;
+      height: 450px;
       border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.25;
+      filter: blur(140px);
+      opacity: 0.15;
       pointer-events: none;
     }
-    .glow-orb.top-left { top: -100px; left: -100px; background: #6366f1; }
-    .glow-orb.bottom-right { bottom: -100px; right: -100px; background: #3b82f6; }
+    .glow-orb.top-left { top: -100px; left: -100px; background: #D6B36A; }
+    .glow-orb.bottom-right { bottom: -100px; right: -100px; background: #38BDF8; }
 
     .login-card-glass {
       width: 100%;
       max-width: 440px;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
+      background: rgba(16, 30, 51, 0.85);
+      backdrop-filter: blur(25px);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-xl);
       padding: 40px 36px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      box-shadow: var(--shadow-modal);
       position: relative;
       z-index: 10;
     }
@@ -100,33 +100,33 @@ import { AuthService } from '../../core/services/auth.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 6px;
+      h2 {
+        font-size: 26px;
+        font-weight: 800;
+        color: #F8FAFC;
+        letter-spacing: -0.02em;
+      }
     }
     .brand-logo-spark {
-      width: 36px;
-      height: 36px;
-      background: var(--brand-gradient);
+      width: 38px;
+      height: 38px;
+      background: var(--gold-gradient);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 18px;
-      color: #fff;
-      box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
-    }
-    .brand-badge-header h2 {
-      font-size: 26px;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: -0.02em;
+      color: #07111F;
+      box-shadow: var(--gold-glow);
     }
 
     .brand-tagline {
       text-align: center;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 28px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 26px;
       font-weight: 500;
     }
 
@@ -134,9 +134,9 @@ import { AuthService } from '../../core/services/auth.service';
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      background: var(--status-critical-bg);
+      border: 1px solid var(--status-critical-border);
+      color: var(--status-critical-text);
       padding: 10px 14px;
       border-radius: 8px;
       font-size: 12.5px;
@@ -146,63 +146,58 @@ import { AuthService } from '../../core/services/auth.service';
 
     .login-form-body .form-group {
       margin-bottom: 18px;
-      label { color: #cbd5e1; font-size: 11.5px; }
-      input {
-        background: rgba(30, 41, 59, 0.7);
-        border: 1.5px solid rgba(255, 255, 255, 0.1);
-        color: #ffffff;
-        padding: 11px 14px;
-        border-radius: 10px;
-        font-size: 14px;
-        &:focus {
-          border-color: #6366f1;
-          background: rgba(30, 41, 59, 0.95);
-          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
-        }
-      }
     }
 
     .btn-block {
       width: 100%;
       padding: 12px;
       font-size: 14px;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
       margin-top: 10px;
     }
-    .cta-glow { box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
+    .cta-glow { box-shadow: var(--gold-glow); }
 
     .quick-demo-section {
       margin-top: 28px;
       padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid var(--border-subtle);
       text-align: center;
     }
-    .demo-title { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 10px; }
+    .demo-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 10px;
+    }
     .demo-pills { display: flex; justify-content: center; gap: 8px; }
     .demo-pill {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #e2e8f0;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-primary);
+      color: var(--text-platinum);
       padding: 6px 12px;
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       transition: var(--transition-smooth);
 
       &:hover {
-        background: rgba(255, 255, 255, 0.12);
-        color: #ffffff;
+        background: var(--bg-surface-hover);
+        color: #FFFFFF;
+        border-color: var(--border-gold);
         transform: translateY(-1px);
       }
     }
-    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: #38bdf8; }
-    .demo-pill.admin .pill-dot { background: #818cf8; }
-    .demo-pill.manager .pill-dot { background: #38bdf8; }
-    .demo-pill.employee .pill-dot { background: #34d399; }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: #D6B36A; }
+    .demo-pill.admin .pill-dot { background: #D6B36A; }
+    .demo-pill.manager .pill-dot { background: #60A5FA; }
+    .demo-pill.employee .pill-dot { background: #34D399; }
   `]
 })
 export class LoginComponent {

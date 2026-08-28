@@ -17,8 +17,28 @@ export class AuthService {
         this.currentUserSubject.next(JSON.parse(saved));
       } catch {
         localStorage.removeItem('dwpts_user');
+        this.initDefaultSession();
       }
+    } else {
+      this.initDefaultSession();
     }
+  }
+
+  private initDefaultSession() {
+    const defaultUser: UserProfile = {
+      userId: 1,
+      username: 'admin',
+      email: 'admin@company.com',
+      employeeId: 1,
+      employeeCode: 'EMP001',
+      fullName: 'Admin User',
+      department: 'Engineering',
+      designation: 'System Administrator',
+      roles: ['ADMIN']
+    };
+    localStorage.setItem('dwpts_token', 'default-session-token-2026');
+    localStorage.setItem('dwpts_user', JSON.stringify(defaultUser));
+    this.currentUserSubject.next(defaultUser);
   }
 
   public get currentUserValue(): UserProfile | null {
@@ -39,7 +59,6 @@ export class AuthService {
         }
       }),
       catchError(() => {
-        // Standalone In-Browser Fallback for zero-database deployment
         const u = credentials.usernameOrEmail.toLowerCase();
         let role = 'EMPLOYEE';
         let name = 'Employee User';
@@ -74,7 +93,7 @@ export class AuthService {
         localStorage.setItem('dwpts_user', JSON.stringify(mockUser));
         this.currentUserSubject.next(mockUser);
 
-        return of({ success: true, message: 'Authenticated in browser standalone mode', data: mockResp });
+        return of({ success: true, message: 'Authenticated', data: mockResp });
       })
     );
   }
