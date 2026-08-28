@@ -28,33 +28,18 @@ import { AuthService } from '../../core/services/auth.service';
         <form (ngSubmit)="onSubmit()" class="login-form-body">
           <div class="form-group">
             <label>Username / Corporate Email</label>
-            <input type="text" [(ngModel)]="username" name="username" placeholder="admin, manager or employee" required />
+            <input type="text" [(ngModel)]="username" name="username" placeholder="Username or Email (e.g. admin)" required />
           </div>
 
           <div class="form-group">
             <label>Password</label>
-            <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••" required />
+            <input type="password" [(ngModel)]="password" name="password" placeholder="Enter your password" required />
           </div>
 
           <button type="submit" class="btn btn-primary btn-block cta-glow" [disabled]="isLoading">
             {{ isLoading ? 'Authenticating...' : 'Sign In to Workspace ➔' }}
           </button>
         </form>
-
-        <div class="quick-demo-section">
-          <span class="demo-title">One-Click Quick Login:</span>
-          <div class="demo-pills">
-            <button type="button" class="demo-pill admin" (click)="setDemo('admin', 'Admin@123')">
-              <span class="pill-dot"></span> Admin
-            </button>
-            <button type="button" class="demo-pill manager" (click)="setDemo('manager', 'Manager@123')">
-              <span class="pill-dot"></span> Manager
-            </button>
-            <button type="button" class="demo-pill employee" (click)="setDemo('employee', 'Employee@123')">
-              <span class="pill-dot"></span> Employee
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   `,
@@ -90,7 +75,7 @@ import { AuthService } from '../../core/services/auth.service';
       backdrop-filter: blur(25px);
       border: 1px solid var(--border-gold);
       border-radius: var(--radius-xl);
-      padding: 40px 36px;
+      padding: 44px 38px;
       box-shadow: var(--shadow-modal);
       position: relative;
       z-index: 10;
@@ -103,30 +88,30 @@ import { AuthService } from '../../core/services/auth.service';
       gap: 12px;
       margin-bottom: 6px;
       h2 {
-        font-size: 26px;
+        font-size: 28px;
         font-weight: 800;
         color: #F8FAFC;
         letter-spacing: -0.02em;
       }
     }
     .brand-logo-spark {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       background: var(--gold-gradient);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 20px;
       color: #07111F;
       box-shadow: var(--gold-glow);
     }
 
     .brand-tagline {
       text-align: center;
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--text-muted);
-      margin-bottom: 26px;
+      margin-bottom: 28px;
       font-weight: 500;
     }
 
@@ -145,75 +130,33 @@ import { AuthService } from '../../core/services/auth.service';
     }
 
     .login-form-body .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .btn-block {
       width: 100%;
-      padding: 12px;
-      font-size: 14px;
+      padding: 13px;
+      font-size: 14.5px;
       border-radius: var(--radius-md);
       margin-top: 10px;
     }
     .cta-glow { box-shadow: var(--gold-glow); }
-
-    .quick-demo-section {
-      margin-top: 28px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border-subtle);
-      text-align: center;
-    }
-    .demo-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: 10px;
-    }
-    .demo-pills { display: flex; justify-content: center; gap: 8px; }
-    .demo-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bg-surface-elevated);
-      border: 1px solid var(--border-primary);
-      color: var(--text-platinum);
-      padding: 6px 12px;
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition-smooth);
-
-      &:hover {
-        background: var(--bg-surface-hover);
-        color: #FFFFFF;
-        border-color: var(--border-gold);
-        transform: translateY(-1px);
-      }
-    }
-    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: #D6B36A; }
-    .demo-pill.admin .pill-dot { background: #D6B36A; }
-    .demo-pill.manager .pill-dot { background: #60A5FA; }
-    .demo-pill.employee .pill-dot { background: #34D399; }
   `]
 })
 export class LoginComponent {
-  username = 'admin';
-  password = 'Admin@123';
+  username = '';
+  password = '';
   isLoading = false;
   errorMessage = '';
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  setDemo(u: string, p: string) {
-    this.username = u;
-    this.password = p;
-  }
-
   onSubmit() {
+    if (!this.username || !this.password) {
+      this.errorMessage = 'Please enter both username and password';
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = '';
     this.auth.login({ usernameOrEmail: this.username, password: this.password }).subscribe({
@@ -222,7 +165,7 @@ export class LoginComponent {
         if (res.success) {
           this.router.navigate(['/daily-work']);
         } else {
-          this.errorMessage = res.message || 'Login failed';
+          this.errorMessage = res.message || 'Invalid username or password';
         }
       },
       error: err => {
