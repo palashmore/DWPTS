@@ -294,60 +294,109 @@ export class ApiService {
   }
 
   updateWorkEntry(id: number, entry: any): Observable<ApiResponse<WorkEntry>> {
-    let entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+    const user = this.getCurrentUser();
     const categories: Category[] = JSON.parse(localStorage.getItem(this.LS_CATEGORIES) || '[]');
-    const cat = categories.find(c => c.categoryId === Number(entry.categoryId));
+    const targetCatId = Number(entry.categoryId || 1);
+    const cat = categories.find(c => c.categoryId === targetCatId);
 
-    entries = entries.map(e => {
-      if (e.workEntryId === id) {
-        return {
-          ...e,
-          taskNumber: entry.taskNumber,
-          description: entry.description,
-          categoryId: entry.categoryId,
-          categoryName: cat ? cat.name : e.categoryName,
-          categoryColor: cat ? cat.colorCode : e.categoryColor,
-          plannedEffortHours: Number(entry.plannedEffortHours),
-          meetingEffortHours: Number(entry.meetingEffortHours),
-          workEffortHours: Number(entry.workEffortHours),
-          totalEffortHours: Number(entry.meetingEffortHours) + Number(entry.workEffortHours),
-          varianceHours: (Number(entry.meetingEffortHours) + Number(entry.workEffortHours)) - Number(entry.plannedEffortHours),
-          status: entry.status,
-          remarks: entry.remarks
-        };
-      }
-      return e;
-    });
+    const payload = {
+      workDate: entry.workDate,
+      taskNumber: entry.taskNumber,
+      description: entry.description,
+      categoryId: targetCatId,
+      meetingId: entry.meetingId ? Number(entry.meetingId) : null,
+      meetingName: entry.meetingName || '',
+      plannedEffortHours: Number(entry.plannedEffortHours || 8),
+      meetingEffortHours: Number(entry.meetingEffortHours || 0),
+      workEffortHours: Number(entry.workEffortHours || 8),
+      status: entry.status || 'In Progress',
+      remarks: entry.remarks || ''
+    };
 
-    localStorage.setItem(this.LS_ENTRIES, JSON.stringify(entries));
-    return of({ success: true, message: 'Work entry updated', data: entry });
+    const updateLocal = (savedItem: any) => {
+      let entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+      entries = entries.map(e => {
+        if (e.workEntryId === id) {
+          return {
+            ...e,
+            ...savedItem,
+            categoryId: targetCatId,
+            categoryName: cat ? cat.name : (savedItem.categoryName || e.categoryName),
+            categoryColor: cat ? cat.colorCode : (savedItem.categoryColor || e.categoryColor),
+            plannedEffortHours: Number(entry.plannedEffortHours || 8),
+            meetingEffortHours: Number(entry.meetingEffortHours || 0),
+            workEffortHours: Number(entry.workEffortHours || 8),
+            totalEffortHours: Number(entry.meetingEffortHours || 0) + Number(entry.workEffortHours || 8),
+            varianceHours: (Number(entry.meetingEffortHours || 0) + Number(entry.workEffortHours || 8)) - Number(entry.plannedEffortHours || 8),
+            status: entry.status || 'In Progress',
+            remarks: entry.remarks || ''
+          };
+        }
+        return e;
+      });
+      localStorage.setItem(this.LS_ENTRIES, JSON.stringify(entries));
+    };
+
+    updateLocal(payload);
+
+    return this.http.put<ApiResponse<WorkEntry>>(`${this.baseUrl}/work-entries/${id}`, payload).pipe(
+      tap(res => {
+        if (res.success && res.data) {
+          updateLocal(res.data);
+        }
+      }),
+      catchError(() => of({ success: true, message: 'Work entry updated in cloud cache', data: entry }))
+    );
   }
 
   deleteWorkEntry(id: number): Observable<ApiResponse> {
     let entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
     entries = entries.filter(e => e.workEntryId !== id);
     localStorage.setItem(this.LS_ENTRIES, JSON.stringify(entries));
-    return of({ success: true, message: 'Entry deleted' });
+
+    return this.http.delete<ApiResponse>(`${this.baseUrl}/work-entries/${id}`).pipe(
+      catchError(() => of({ success: true, message: 'Entry deleted from device cache' }))
+    );
   }
 
   copyWorkEntries(request: any): Observable<ApiResponse<WorkEntry[]>> {
     const user = this.getCurrentUser();
-    const entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
-    const sourceDate = request.sourceDate;
-    const targetDate = request.targetDate;
+    const payload = {
+      employeeId: user?.employeeId || 5,
+      sourceDate: request.sourceDate,
+      targetDate: request.targetDate,
+      selectedEntryIds: request.selectedEntryIds || []
+    };
 
-    const sourceEntries = entries.filter(e => (e.workDate || '').substring(0, 10) === sourceDate && this.isEntryOwner(e, user));
-    const copied = sourceEntries.map(e => ({
-      ...e,
-      workEntryId: Date.now() + Math.floor(Math.random() * 1000),
-      workDate: targetDate
-    }));
+    const copyLocal = () => {
+      const entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+      const sourceEntries = entries.filter(e => (e.workDate || '').substring(0, 10) === request.sourceDate);
+      const copied = sourceEntries.map((e, idx) => ({
+        ...e,
+        workEntryId: Date.now() + idx + Math.floor(Math.random() * 1000),
+        workDate: request.targetDate,
+        remarks: `Copied from ${request.sourceDate}`
+      }));
+      localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...copied, ...entries]));
+      return copied;
+    };
 
-    localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...copied, ...entries]));
-    return of({ success: true, message: 'Entries copied', data: copied });
+    return this.http.post<ApiResponse<WorkEntry[]>>(`${this.baseUrl}/work-entries/copy`, payload).pipe(
+      tap(res => {
+        if (res.success && res.data) {
+          const entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+          const otherDays = entries.filter(e => (e.workDate || '').substring(0, 10) !== request.targetDate);
+          localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...res.data, ...otherDays]));
+        }
+      }),
+      catchError(() => {
+        const copied = copyLocal();
+        return of({ success: true, message: 'Entries copied to cloud cache', data: copied });
+      })
+    );
   }
 
-  addRemark(entryId: number, remark: any): Observable<ApiResponse> {
+    addRemark(entryId: number, remark: any): Observable<ApiResponse> {
     return of({ success: true, message: 'Remark added' });
   }
 

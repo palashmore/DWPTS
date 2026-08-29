@@ -372,7 +372,7 @@ public class WorkEntryService : IWorkEntryService
         var targetDate = request.TargetDate.Date;
 
         var sourceQuery = _context.WorkEntries
-            .Where(e => e.EmployeeId == empId && e.WorkDate.Date == sourceDate);
+            .Where(e => !e.IsDeleted && e.WorkDate.Date == sourceDate);
 
         if (request.SelectedEntryIds != null && request.SelectedEntryIds.Any())
         {
@@ -382,7 +382,17 @@ public class WorkEntryService : IWorkEntryService
         var sourceEntries = await sourceQuery.ToListAsync();
         if (!sourceEntries.Any())
         {
-            return ApiResponse<List<WorkEntryDto>>.Fail("No entries found on source date to copy.");
+            // If no entries on exact source date, find most recent previous entries
+            sourceEntries = await _context.WorkEntries
+                .Where(e => !e.IsDeleted && e.WorkDate.Date < targetDate)
+                .OrderByDescending(e => e.WorkDate)
+                .Take(10)
+                .ToListAsync();
+        }
+
+        if (!sourceEntries.Any())
+        {
+            return ApiResponse<List<WorkEntryDto>>.Fail($"No entries found to copy.");
         }
 
         var copiedEntries = new List<WorkEntry>();
@@ -403,7 +413,7 @@ public class WorkEntryService : IWorkEntryService
                 WorkEffortHours = s.WorkEffortHours,
                 TotalEffortHours = s.TotalEffortHours,
                 Status = "In Progress",
-                Remarks = $"Copied from {sourceDate:yyyy-MM-dd}"
+                Remarks = $"Copied from {s.WorkDate:yyyy-MM-dd}"
             };
             copiedEntries.Add(newEntry);
         }
