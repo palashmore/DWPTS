@@ -13,6 +13,7 @@ export class ApiService {
   private readonly LS_CATEGORIES = 'dwpts_categories';
   private readonly LS_MEETINGS = 'dwpts_meetings';
   private readonly LS_USERS = 'dwpts_users';
+  private readonly LS_LEAVES = 'dwpts_leaves';
 
   constructor(private http: HttpClient) {
     this.initLocalStorageDefaults();
@@ -433,22 +434,42 @@ export class ApiService {
 
   getMeetings(): Observable<ApiResponse<Meeting[]>> {
     const defaultMeets: Meeting[] = [
-      { meetingId: 1, meetingName: 'Daily Standup', defaultDurationHours: 0.5, isActive: true },
-      { meetingId: 2, meetingName: 'Sprint Planning', defaultDurationHours: 2.0, isActive: true },
-      { meetingId: 3, meetingName: 'Sprint Retrospective', defaultDurationHours: 1.0, isActive: true }
+      { meetingId: 1, meetingName: 'BYD SYNC UP Meeting', defaultDurationHours: 1.0, isActive: true },
+      { meetingId: 2, meetingName: 'CRM Walkthrough Meeting', defaultDurationHours: 1.0, isActive: true },
+      { meetingId: 3, meetingName: 'DMS Walkthrough Meeting', defaultDurationHours: 1.0, isActive: true },
+      { meetingId: 4, meetingName: 'Daily Stand Up', defaultDurationHours: 0.5, isActive: true },
+      { meetingId: 5, meetingName: 'FC Clarification', defaultDurationHours: 1.0, isActive: true },
+      { meetingId: 6, meetingName: 'Sprint Planning', defaultDurationHours: 2.0, isActive: true }
     ];
-    return this.http.get<ApiResponse<Meeting[]>>(`${this.baseUrl}/meetings`).pipe(
-      catchError(() => of({ success: true, message: 'OK', data: defaultMeets }))
-    );
+
+    const localMeets: Meeting[] = JSON.parse(localStorage.getItem(this.LS_MEETINGS) || '[]');
+    if (localMeets.length === 0) {
+      localStorage.setItem(this.LS_MEETINGS, JSON.stringify(defaultMeets));
+      return of({ success: true, message: 'OK', data: defaultMeets });
+    }
+
+    return of({ success: true, message: 'OK', data: localMeets });
+  }
+
+  createMeeting(meeting: any): Observable<ApiResponse<Meeting>> {
+    const localMeets: Meeting[] = JSON.parse(localStorage.getItem(this.LS_MEETINGS) || '[]');
+    const newMeet: Meeting = {
+      meetingId: Date.now(),
+      meetingName: meeting.meetingName,
+      defaultDurationHours: Number(meeting.defaultDurationHours || 1.0),
+      description: meeting.description || '',
+      isActive: true
+    };
+    localMeets.push(newMeet);
+    localStorage.setItem(this.LS_MEETINGS, JSON.stringify(localMeets));
+    return of({ success: true, message: 'Meeting created successfully', data: newMeet });
   }
 
   getMeetingAnalysis(fromDate?: string, toDate?: string): Observable<ApiResponse<MeetingAnalysis[]>> {
-    return this.http.get<ApiResponse<MeetingAnalysis[]>>(`${this.baseUrl}/meetings/analysis`).pipe(
-      catchError(() => of({ success: true, message: 'OK', data: [] }))
-    );
+    return of({ success: true, message: 'OK', data: [] });
   }
 
-  // Work Items Backlog
+    // Work Items Backlog
   getWorkItems(filter: any): Observable<ApiResponse<PagedResult<WorkItem>>> {
     const user = this.getCurrentUser();
     const isAdmin = this.isAdminOrManager();
@@ -614,18 +635,48 @@ export class ApiService {
   }
 
   getLeaves(employeeId?: number, year?: number): Observable<ApiResponse<Leave[]>> {
-    return of({ success: true, message: 'OK', data: [] });
+    const user = this.getCurrentUser();
+    const isAdmin = this.isAdminOrManager();
+    let leaves: Leave[] = JSON.parse(localStorage.getItem(this.LS_LEAVES) || '[]');
+    if (!isAdmin && user) {
+      leaves = leaves.filter(l => l.employeeId === user.employeeId || (l.employeeName || '').toLowerCase() === (user.fullName || '').toLowerCase());
+    }
+    return of({ success: true, message: 'OK', data: leaves });
   }
 
   applyLeave(leave: any): Observable<ApiResponse<Leave>> {
-    return of({ success: true, message: 'Leave applied', data: leave });
+    const user = this.getCurrentUser();
+    const leaves: Leave[] = JSON.parse(localStorage.getItem(this.LS_LEAVES) || '[]');
+
+    const f = new Date(leave.fromDate);
+    const t = new Date(leave.toDate);
+    const diff = t.getTime() - f.getTime();
+    const days = Math.max(1, Math.round(diff / (1000 * 3600 * 24)) + 1);
+
+    const newLeave: Leave = {
+      employeeLeaveId: Date.now(),
+      employeeId: user?.employeeId || 5,
+      employeeName: user?.fullName || 'Palash More',
+      leaveTypeId: 1,
+      leaveTypeName: leave.leaveTypeName || 'Casual Leave',
+      fromDate: leave.fromDate,
+      toDate: leave.toDate,
+      durationDays: days,
+      durationHours: days * 8,
+      reason: leave.reason || 'Leave Application',
+      status: 'Approved'
+    };
+
+    leaves.unshift(newLeave);
+    localStorage.setItem(this.LS_LEAVES, JSON.stringify(leaves));
+    return of({ success: true, message: 'Leave applied successfully', data: newLeave });
   }
 
   updateLeaveStatus(id: number, status: string, remarks?: string): Observable<ApiResponse<Leave>> {
     return of({ success: true, message: 'Leave status updated', data: {} as any });
   }
 
-  // Excel Importer
+    // Excel Importer
   previewExcel(file: File): Observable<ApiResponse<ImportPreview>> {
     const rows: any[] = [];
     const sheets = ['AUG 2026', 'JUL 2026', 'JUN 2026', 'MAY 2026', 'AllData'];

@@ -1191,6 +1191,8 @@ export class DailyWorkComponent implements OnInit {
 
   openAddModal() {
     this.editingEntryId = null;
+    this.api.getMeetings().subscribe(res => { if (res.success && res.data) this.meetings = res.data; });
+    this.api.getCategories().subscribe(res => { if (res.success && res.data && res.data.length > 0) this.categories = res.data; });
     this.entryForm = {
       taskNumber: '',
       categoryId: this.categories.length > 0 ? this.categories[0].categoryId : 1,
