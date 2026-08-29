@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { ApiResponse, DailyWorkScreen, PagedResult, WorkEntry, WorkItem, WorkItemTimeline, Category, Meeting, MeetingAnalysis, Holiday, Leave, CalendarMonth, DashboardSummary, WeeklyReport, MonthlyReport, YearlyReport, ImportPreview, ImportResult, UserProfile } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
