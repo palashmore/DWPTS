@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -22,7 +22,7 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
         <div class="drop-zone" (click)="fileInput.click()">
           <span class="upload-icon">📁</span>
           <h3>Click or Drag & Drop Excel Workbook</h3>
-          <p>Supports .xlsx files with monthly sheets, AllData, and multi-row task entries</p>
+          <p>Supports .xlsx files with monthly sheets (AUG, JUL, JUN, MAY 2026), AllData, and multi-row task entries</p>
           <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx,.xls" style="display: none" />
         </div>
         <div *ngIf="isUploading" class="upload-loading">
@@ -34,12 +34,22 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
       <!-- Preview Section -->
       <div *ngIf="preview">
         <div class="dwpts-card">
-          <div class="card-header">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div>
               <h3>Import Preview: {{ preview.fileName }}</h3>
               <span class="subtitle">{{ preview.totalSheets }} Sheets detected: {{ preview.detectedSheets.join(', ') }}</span>
             </div>
-            <div class="import-actions">
+            
+            <div class="import-actions" style="display: flex; align-items: center; gap: 12px;">
+              <!-- Target Employee Assignment Selector -->
+              <div class="target-emp-box" style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--gold-highlight);">IMPORT FOR:</span>
+                <select [(ngModel)]="targetEmployee" style="padding: 6px 12px; border-radius: var(--radius-md); background: var(--bg-navy-deep); border: 1px solid var(--border-gold); color: var(--text-primary); font-size: 12px; font-weight: 700; outline: none;">
+                  <option value="ALL">🌐 All Employees (Universal Org Baseline)</option>
+                  <option *ngFor="let emp of employeeList" [value]="emp.username || emp.employeeCode">{{ emp.fullName }} ({{ emp.employeeCode }})</option>
+                </select>
+              </div>
+
               <button class="btn btn-secondary btn-pill" (click)="preview = null">Cancel</button>
               <button class="btn btn-primary btn-pill cta-glow" [disabled]="isImporting" (click)="confirmImport()">
                 {{ isImporting ? 'Importing...' : 'Confirm & Import (' + preview.totalRows + ' rows)' }}
@@ -111,6 +121,7 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
           <div>
             <h3>Import Completed Successfully!</h3>
             <p>Processed {{ importResult.totalProcessed }} rows: {{ importResult.importedCount }} imported, {{ importResult.skippedCount }} skipped.</p>
+            <p style="font-size: 12px; color: var(--gold-highlight); margin-top: 4px;">Assigned to: {{ targetEmployee === 'ALL' ? 'All Employees (Universal Baseline)' : targetEmployee }}</p>
           </div>
         </div>
       </div>
@@ -141,13 +152,19 @@ import { ImportPreview, ImportResult } from '../../core/models/models';
     .cta-glow { box-shadow: var(--gold-glow-subtle); }
   `]
 })
-export class ImportComponent {
+export class ImportComponent implements OnInit {
   isUploading = false;
   isImporting = false;
+  targetEmployee = 'ALL';
+  employeeList: any[] = [];
   preview: ImportPreview | null = null;
   importResult: ImportResult | null = null;
 
   constructor(private api: ApiService) {}
+
+  ngOnInit() {
+    this.api.getEmployees().subscribe(res => this.employeeList = res.data || []);
+  }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -174,7 +191,7 @@ export class ImportComponent {
   confirmImport() {
     if (!this.preview) return;
     this.isImporting = true;
-    this.api.confirmImport({ rowsToImport: this.preview.previewRows }).subscribe({
+    this.api.confirmImport({ rowsToImport: this.preview.previewRows, targetEmployee: this.targetEmployee }).subscribe({
       next: res => {
         this.isImporting = false;
         if (res.success && res.data) {

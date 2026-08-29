@@ -59,6 +59,7 @@ export interface WorkEntry {
   varianceHours: number;
   status: string;
   remarks?: string;
+  isOrgBaseline?: boolean;
   createdAt: string;
   remarksHistory?: WorkEntryRemark[];
 }
@@ -69,6 +70,7 @@ export interface WorkEntryRemark {
   username?: string;
   remarkText: string;
   status?: string;
+  isOrgBaseline?: boolean;
   createdAt: string;
 }
 
@@ -108,6 +110,7 @@ export interface WorkItem {
   daysWorkedCount: number;
   firstWorkedDate?: string;
   lastWorkedDate?: string;
+  isOrgBaseline?: boolean;
   createdAt: string;
 }
 

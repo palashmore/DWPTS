@@ -40,6 +40,9 @@ export class ApiService {
     const targetFullName = (user.fullName || '').toLowerCase();
     const targetCode = (user.employeeCode || '').toLowerCase();
 
+    // Organization baseline historical import data is accessible to all team members
+    if (entry.isOrgBaseline || (entry.username && entry.username.toLowerCase() === 'all')) return true;
+
     // Match by username
     if (entry.username && entry.username.toLowerCase() === targetUser) return true;
 
@@ -511,15 +514,26 @@ export class ApiService {
   confirmImport(request: any): Observable<ApiResponse<ImportResult>> {
     const user = this.getCurrentUser();
     const rows = request.rowsToImport || [];
+    const targetEmp = request.targetEmployee || 'ALL'; // 'ALL' or specific username/employeeCode
+    const isAll = targetEmp === 'ALL';
+    
+    const users: any[] = JSON.parse(localStorage.getItem(this.LS_USERS) || '[]');
+    const selectedUser = users.find((u: any) => (u.username && u.username.toLowerCase() === targetEmp.toLowerCase()) || u.employeeCode === targetEmp);
+
+    const empName = isAll ? 'Organization Baseline' : (selectedUser ? selectedUser.fullName : (user?.fullName || 'User'));
+    const empUser = isAll ? 'all' : (selectedUser ? selectedUser.username.toLowerCase() : (user?.username || 'user').toLowerCase());
+    const empCode = isAll ? 'ORG_BASELINE' : (selectedUser ? selectedUser.employeeCode : (user?.employeeCode || 'EMP001'));
+
     const entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
     
     rows.forEach((r: any, idx: number) => {
       entries.unshift({
         workEntryId: Date.now() + idx,
-        employeeId: user?.employeeId || 1,
-        employeeCode: user?.employeeCode || 'EMP_USER',
-        employeeName: user?.fullName || 'User',
-        username: (user?.username || 'user').toLowerCase(),
+        employeeId: isAll ? 0 : (user?.employeeId || 1),
+        employeeCode: empCode,
+        employeeName: empName,
+        username: empUser,
+        isOrgBaseline: isAll,
         workDate: r.date || new Date().toISOString().substring(0, 10),
         taskNumber: r.normalizedTaskNumber || 'TASK',
         description: r.rawTask || r.normalizedTitle || 'Imported Task',
