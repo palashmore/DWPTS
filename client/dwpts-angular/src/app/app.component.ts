@@ -77,6 +77,10 @@ import { ThemeService, ThemeOption } from './core/services/theme.service';
               <span class="nav-icon">⚙️</span>
               <span class="nav-label" *ngIf="!isSidebarCollapsed">Administration</span>
             </a>
+            <a routerLink="/monitoring" routerLinkActive="active" class="nav-item" title="API Monitoring & Observability">
+              <span class="nav-icon">📡</span>
+              <span class="nav-label" *ngIf="!isSidebarCollapsed">API Monitoring</span>
+            </a>
           </div>
         </nav>
 
