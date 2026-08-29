@@ -40,17 +40,20 @@ export class ApiService {
     const targetFullName = (user.fullName || '').toLowerCase();
     const targetCode = (user.employeeCode || '').toLowerCase();
 
-    // Organization baseline historical import data is accessible to all team members
-    if (entry.isOrgBaseline || (entry.username && entry.username.toLowerCase() === 'all')) return true;
+    // 1. Organization baseline historical import data is accessible to all team members
+    if (entry.isOrgBaseline || (entry.username && entry.username.toLowerCase() === 'all') || (entry.employeeCode && (entry.employeeCode.toLowerCase() === 'all' || entry.employeeCode.toLowerCase() === 'org_baseline'))) return true;
 
-    // Match by username
-    if (entry.username && entry.username.toLowerCase() === targetUser) return true;
+    // 2. Unassigned baseline tasks
+    if (!entry.username && !entry.employeeCode) return true;
 
-    // Match by full name
-    if (entry.employeeName && entry.employeeName.toLowerCase() === targetFullName) return true;
+    // 3. Match by username
+    if (entry.username && (entry.username.toLowerCase() === targetUser || targetUser.includes(entry.username.toLowerCase()) || entry.username.toLowerCase().includes(targetUser))) return true;
 
-    // Match by employee code
-    if (entry.employeeCode && entry.employeeCode.toLowerCase() === targetCode) return true;
+    // 4. Match by full name
+    if (entry.employeeName && (entry.employeeName.toLowerCase() === targetFullName || targetFullName.includes(entry.employeeName.toLowerCase()) || entry.employeeName.toLowerCase().includes(targetFullName))) return true;
+
+    // 5. Match by employee code
+    if (entry.employeeCode && (entry.employeeCode.toLowerCase() === targetCode || targetCode.includes(entry.employeeCode.toLowerCase()) || entry.employeeCode.toLowerCase().includes(targetCode))) return true;
 
     return false;
   }
@@ -72,7 +75,127 @@ export class ApiService {
       localStorage.setItem(this.LS_CATEGORIES, JSON.stringify(defCats));
     }
 
-    // Pre-populate standard sample entries for users if storage is fresh
+    // Pre-populate standard sample entries and historical data for users if storage is fresh
+    const existingEntries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+    if (existingEntries.length < 4) {
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const yesterday = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
+      const aug25 = '2026-08-25';
+      const aug26 = '2026-08-26';
+
+      const initialEntries: WorkEntry[] = [
+        // Pallavi Active & Historical Tasks
+        {
+          workEntryId: 101,
+          employeeId: 4,
+          employeeCode: 'EMP_PALLAVI',
+          employeeName: 'Pallavi Sharma',
+          username: 'pallavi',
+          workDate: todayStr,
+          taskNumber: '#QA-102',
+          description: 'Automated Regression Testing on Work Entries & Capacity API',
+          categoryId: 7,
+          categoryName: 'Testing',
+          categoryColor: '#4ADE80',
+          plannedEffortHours: 7.0,
+          meetingEffortHours: 1.0,
+          workEffortHours: 6.0,
+          totalEffortHours: 7.0,
+          varianceHours: 0,
+          status: 'In Progress',
+          remarks: 'Automated test suite validation',
+          createdAt: new Date().toISOString()
+        },
+        {
+          workEntryId: 103,
+          employeeId: 4,
+          employeeCode: 'EMP_PALLAVI',
+          employeeName: 'Pallavi Sharma',
+          username: 'pallavi',
+          workDate: yesterday,
+          taskNumber: '#QA-101',
+          description: 'E2E Cross-Browser & Mobile View Testing on Vercel Deployment',
+          categoryId: 7,
+          categoryName: 'Testing',
+          categoryColor: '#4ADE80',
+          plannedEffortHours: 8.0,
+          meetingEffortHours: 0.5,
+          workEffortHours: 7.5,
+          totalEffortHours: 8.0,
+          varianceHours: 0,
+          status: 'Completed',
+          remarks: 'All 33 automated test cases verified',
+          createdAt: new Date().toISOString()
+        },
+        // Sagar Active & Historical Tasks
+        {
+          workEntryId: 102,
+          employeeId: 5,
+          employeeCode: 'EMP_SAGAR',
+          employeeName: 'Sagar Patil',
+          username: 'sagar',
+          workDate: todayStr,
+          taskNumber: '#DEV-304',
+          description: 'PostgreSQL Migration & Redis Distributed Cache Optimization',
+          categoryId: 1,
+          categoryName: 'Development',
+          categoryColor: '#60A5FA',
+          plannedEffortHours: 8.0,
+          meetingEffortHours: 0.5,
+          workEffortHours: 7.5,
+          totalEffortHours: 8.0,
+          varianceHours: 0,
+          status: 'In Progress',
+          remarks: 'Core backend development sprint',
+          createdAt: new Date().toISOString()
+        },
+        {
+          workEntryId: 104,
+          employeeId: 5,
+          employeeCode: 'EMP_SAGAR',
+          employeeName: 'Sagar Patil',
+          username: 'sagar',
+          workDate: yesterday,
+          taskNumber: '#DEV-303',
+          description: 'ASP.NET Core 8 Web API RateLimiter & CorrelationId Middleware',
+          categoryId: 1,
+          categoryName: 'Development',
+          categoryColor: '#60A5FA',
+          plannedEffortHours: 8.0,
+          meetingEffortHours: 1.0,
+          workEffortHours: 7.0,
+          totalEffortHours: 8.0,
+          varianceHours: 0,
+          status: 'Completed',
+          remarks: 'Middleware pipeline registered',
+          createdAt: new Date().toISOString()
+        },
+        // Universal Org Baseline (Accessible to all)
+        {
+          workEntryId: 105,
+          employeeId: 1,
+          employeeCode: 'ORG_BASELINE',
+          employeeName: 'Organization Baseline',
+          username: 'all',
+          isOrgBaseline: true,
+          workDate: aug26,
+          taskNumber: '#ORG-201',
+          description: 'Universal Sprint Planning & Capacity Baseline Allocation',
+          categoryId: 5,
+          categoryName: 'Discussion',
+          categoryColor: '#A78BFA',
+          plannedEffortHours: 8.0,
+          meetingEffortHours: 2.0,
+          workEffortHours: 6.0,
+          totalEffortHours: 8.0,
+          varianceHours: 0,
+          status: 'Completed',
+          remarks: 'Company-wide sprint kickoff',
+          createdAt: new Date().toISOString()
+        }
+      ];
+      localStorage.setItem(this.LS_ENTRIES, JSON.stringify(initialEntries));
+    }
     if (!localStorage.getItem(this.LS_ENTRIES)) {
       const todayStr = new Date().toISOString().substring(0, 10);
       const initialEntries: WorkEntry[] = [
