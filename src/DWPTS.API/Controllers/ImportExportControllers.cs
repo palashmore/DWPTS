@@ -6,7 +6,6 @@ using DWPTS.Shared.Models;
 
 namespace DWPTS.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/import")]
 public class ImportController : ControllerBase

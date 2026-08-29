@@ -2,10 +2,10 @@
   "version": 2,
   "buildCommand": "cd client/dwpts-angular && npm install && npm run build",
   "outputDirectory": "client/dwpts-angular/dist/dwpts-angular/browser",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }

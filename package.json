@@ -1,0 +1,9 @@
+{
+  "name": "dwpts-workspace",
+  "version": "1.0.0",
+  "description": "Daily Work Planning & Tracking System",
+  "scripts": {
+    "build": "cd client/dwpts-angular && npm install && npm run build",
+    "start": "cd client/dwpts-angular && npm start"
+  }
+}
