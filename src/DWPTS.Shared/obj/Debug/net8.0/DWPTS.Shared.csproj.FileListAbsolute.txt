@@ -9,3 +9,4 @@ C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Shared\obj\Debug\ne
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Shared\obj\Debug\net8.0\refint\DWPTS.Shared.dll
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Shared\obj\Debug\net8.0\DWPTS.Shared.pdb
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Shared\obj\Debug\net8.0\ref\DWPTS.Shared.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Shared\obj\Debug\net8.0\DWPTS.Shared.sourcelink.json

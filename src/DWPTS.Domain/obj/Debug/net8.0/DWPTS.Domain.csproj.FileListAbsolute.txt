@@ -13,3 +13,4 @@ C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\ne
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\refint\DWPTS.Domain.dll
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.pdb
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\ref\DWPTS.Domain.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Domain\obj\Debug\net8.0\DWPTS.Domain.sourcelink.json

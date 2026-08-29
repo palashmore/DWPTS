@@ -193,3 +193,13 @@ C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\obj\Debug\net8.
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\obj\Debug\net8.0\ref\DWPTS.API.dll
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\ExcelDataReader.dll
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\ExcelDataReader.DataSet.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\obj\Debug\net8.0\DWPTS.API.sourcelink.json
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.StackExchangeRedis.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Npgsql.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\Pipelines.Sockets.Unofficial.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.API\bin\Debug\net8.0\StackExchange.Redis.dll

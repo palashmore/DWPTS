@@ -19,3 +19,4 @@ C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Infrastructure\obj\
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Infrastructure\obj\Debug\net8.0\DWPTS.Infrastructure.pdb
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Infrastructure\obj\Debug\net8.0\DWPTS.Infrastructure.genruntimeconfig.cache
 C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Infrastructure\obj\Debug\net8.0\ref\DWPTS.Infrastructure.dll
+C:\Users\palashm\.gemini\antigravity\scratch\DWPTS\src\DWPTS.Infrastructure\obj\Debug\net8.0\DWPTS.Infrastructure.sourcelink.json

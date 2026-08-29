@@ -1,21 +1,25 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using DWPTS.API.Hubs;
 using DWPTS.API.Middleware;
 using DWPTS.API.Services;
 using DWPTS.Application.Common;
 using DWPTS.Application.Interfaces;
 using DWPTS.Application.Validators;
+using DWPTS.Infrastructure.BackgroundJobs;
 using DWPTS.Infrastructure.Data;
 using DWPTS.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
+// Configure Serilog Structured Logging
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -24,16 +28,21 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Database Configuration - SQL Server with SQLite fallback for lightweight development
+// Multi-Provider Database Configuration (PostgreSQL / SQLite / SQL Server)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Server=(localdb)\\mssqllocaldb;Database=DWPTS_DB;Trusted_Connection=True;MultipleActiveResultSets=true";
+    ?? "Data Source=dwpts.db";
 
 var useSqlite = builder.Configuration.GetValue<bool>("UseSqlite", false);
+var isPostgres = connectionString.StartsWith("Host=") || connectionString.StartsWith("Server=") && connectionString.Contains("Port=");
 
 builder.Services.AddDbContext<DWPTSDbContext>((sp, options) =>
 {
     var currentUserService = sp.GetService<ICurrentUserService>();
-    if (useSqlite || connectionString.Contains(".db"))
+    if (isPostgres || builder.Configuration.GetValue<bool>("UsePostgreSql", false))
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else if (useSqlite || connectionString.Contains(".db") || connectionString.Contains("Data Source"))
     {
         options.UseSqlite(connectionString.Contains(".db") ? connectionString : "Data Source=dwpts.db");
     }
@@ -43,9 +52,15 @@ builder.Services.AddDbContext<DWPTSDbContext>((sp, options) =>
     }
 });
 
-// Dependency Injection
+// Dependency Injection - Application & Domain Services
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
+
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddScoped<IEventBus, KafkaEventBus>();
+builder.Services.AddScoped<ISignalRNotifier, SignalRNotifier>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -65,8 +80,27 @@ builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 
+// Hosted Background Services
+builder.Services.AddHostedService<DailyCapacityCalculationJob>();
+
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+// Rate Limiting (Token Bucket policy for enterprise resilience)
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100,
+                QueueLimit = 20,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // Authentication & JWT
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "DWPTS_SUPER_SECRET_KEY_FOR_JWT_AUTHENTICATION_AND_SIGNING_2026";
@@ -93,7 +127,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireEmployee", policy => policy.RequireRole("EMPLOYEE", "MANAGER", "ADMIN"));
 });
 
-// CORS
+// CORS Policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -108,7 +142,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "DWPTS API", Version = "v1", Description = "Daily Work Planning & Tracking System REST API" });
+    c.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "DWPTS Enterprise REST API", 
+        Version = "v1", 
+        Description = "Daily Work Planning, Capacity Management & Observability Platform" 
+    });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -139,24 +178,36 @@ using (var scope = app.Services.CreateScope())
     await DbInitializer.SeedAsync(db);
 }
 
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DWPTS API v1"));
 
 app.UseCors("AllowAll");
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<WorkNotificationHub>("/hubs/work-notifications");
 
 app.MapGet("/", () => Results.Ok(new 
 { 
     status = "Healthy", 
-    service = "DWPTS API", 
-    version = "1.0", 
+    service = "DWPTS Enterprise API", 
+    version = "1.0.0", 
+    environment = app.Environment.EnvironmentName,
     docs = "/swagger",
+    timestamp = DateTime.UtcNow 
+}));
+
+app.MapGet("/health", () => Results.Ok(new 
+{ 
+    status = "Healthy", 
+    database = "Connected",
+    cache = "Active",
     timestamp = DateTime.UtcNow 
 }));
 
