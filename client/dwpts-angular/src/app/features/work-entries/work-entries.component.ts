@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
-import { WorkEntry, Category, Meeting, PagedResult } from '../../core/models/models';
+import { WorkEntry, Category, PagedResult } from '../../core/models/models';
 
 @Component({
   selector: 'app-work-entries',
@@ -15,12 +15,20 @@ import { WorkEntry, Category, Meeting, PagedResult } from '../../core/models/mod
           <h2>All Work Entries (Excel AllData)</h2>
           <p class="subtitle">Complete historical repository with server-side filtering, search, and CSV export</p>
         </div>
-        <button class="btn btn-success" (click)="exportCsv()">📥 Export CSV</button>
+        <button class="btn btn-primary btn-pill cta-glow" (click)="exportCsv()">📥 Export CSV</button>
       </div>
 
       <!-- Filters Bar -->
       <div class="dwpts-card filters-card">
         <div class="filters-grid">
+          <div class="form-group" *ngIf="isAdmin">
+            <label>Filter by Employee</label>
+            <select [(ngModel)]="filter.employeeCode" (ngModelChange)="onFilterChange()">
+              <option value="ALL">All Employees (Org-wide)</option>
+              <option *ngFor="let emp of employees" [value]="emp.employeeCode">{{ emp.fullName }} ({{ emp.employeeCode }})</option>
+            </select>
+          </div>
+
           <div class="form-group">
             <label>Search</label>
             <input type="text" [(ngModel)]="filter.searchTerm" (ngModelChange)="onFilterChange()" placeholder="Task, description, remarks..." />
@@ -56,83 +64,88 @@ import { WorkEntry, Category, Meeting, PagedResult } from '../../core/models/mod
       <!-- Entries Table -->
       <div class="dwpts-card">
         <div class="card-header">
-          <h3>Records ({{ result?.totalCount || 0 }} Total)</h3>
-          <span class="subtitle">Page {{ filter.pageNumber }} of {{ result?.totalPages || 1 }}</span>
+          <div>
+            <h3>Records ({{ result?.totalCount || 0 }} Total)</h3>
+            <span class="subtitle">{{ isAdmin ? 'Viewing organization records' : 'Viewing your personal logged entries' }}</span>
+          </div>
         </div>
 
         <div class="dwpts-table-container">
           <table class="dwpts-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Day</th>
-                <th>Task #</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Meeting</th>
-                <th>Meeting (h)</th>
-                <th>Work (h)</th>
-                <th>Total (h)</th>
-                <th>Status</th>
-                <th>Remarks</th>
+                <th *ngIf="isAdmin">EMPLOYEE</th>
+                <th>DATE</th>
+                <th>TASK #</th>
+                <th>DESCRIPTION</th>
+                <th>CATEGORY</th>
+                <th>MEETING</th>
+                <th style="text-align: right;">MEETING (H)</th>
+                <th style="text-align: right;">WORK (H)</th>
+                <th style="text-align: right;">TOTAL (H)</th>
+                <th>STATUS</th>
+                <th>REMARKS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let e of result?.items">
+                <td *ngIf="isAdmin"><strong>{{ e.employeeName || 'User' }}</strong></td>
                 <td>{{ e.workDate | date:'yyyy-MM-dd' }}</td>
-                <td>{{ e.dayName }}</td>
-                <td><strong>{{ e.taskNumber || '-' }}</strong></td>
+                <td><span class="mono-badge">{{ e.taskNumber || '-' }}</span></td>
                 <td>{{ e.description }}</td>
-                <td><span class="badge" [style.background]="(e.categoryColor || '#3b82f6') + '20'" [style.color]="e.categoryColor || '#2563eb'">{{ e.categoryName || 'General' }}</span></td>
+                <td><span class="badge" [style.background]="(e.categoryColor || '#60A5FA') + '20'" [style.color]="e.categoryColor || '#60A5FA'">{{ e.categoryName || 'Development' }}</span></td>
                 <td>{{ e.meetingName || '-' }}</td>
-                <td>{{ e.meetingEffortHours }}h</td>
-                <td>{{ e.workEffortHours }}h</td>
-                <td><strong>{{ e.totalEffortHours }}h</strong></td>
+                <td style="text-align: right;">{{ e.meetingEffortHours }}h</td>
+                <td style="text-align: right;">{{ e.workEffortHours }}h</td>
+                <td style="text-align: right;"><strong style="color: var(--text-gold);">{{ e.totalEffortHours }}h</strong></td>
                 <td><span class="badge status-completed">{{ e.status }}</span></td>
                 <td>{{ e.remarks || '-' }}</td>
               </tr>
               <tr *ngIf="result?.items?.length === 0">
-                <td colspan="11" style="text-align: center; color: #94a3b8; padding: 24px;">No records match the filter criteria.</td>
+                <td [attr.colspan]="isAdmin ? 11 : 10" style="text-align: center; color: var(--text-muted); padding: 28px;">
+                  No work records found for this view.
+                </td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination-bar" *ngIf="result && result.totalPages > 1">
-          <button class="btn btn-secondary btn-sm" [disabled]="!result.hasPreviousPage" (click)="goToPage(filter.pageNumber - 1)">◀ Previous</button>
-          <span class="page-indicator">Page {{ result.pageNumber }} of {{ result.totalPages }}</span>
-          <button class="btn btn-secondary btn-sm" [disabled]="!result.hasNextPage" (click)="goToPage(filter.pageNumber + 1)">Next ▶</button>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .page-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .page-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .page-title-row h2 { font-size: 22px; font-weight: 800; color: var(--text-primary); }
+    .subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
     .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
-    .pagination-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
-    .page-indicator { font-size: 13px; font-weight: 600; color: #475569; }
+    .cta-glow { box-shadow: var(--gold-glow-subtle); }
   `]
 })
 export class WorkEntriesComponent implements OnInit {
   filter: any = {
+    employeeCode: 'ALL',
     searchTerm: '',
     fromDate: '',
     toDate: '',
     categoryId: null,
     status: '',
     pageNumber: 1,
-    pageSize: 25
+    pageSize: 50
   };
 
+  isAdmin = false;
+  employees: any[] = [];
   result: PagedResult<WorkEntry> | null = null;
   categories: Category[] = [];
 
   constructor(private api: ApiService) {}
 
   ngOnInit() {
+    this.isAdmin = this.api.isAdminOrManager();
     this.loadData();
     this.api.getCategories().subscribe(res => this.categories = res.data || []);
+    if (this.isAdmin) {
+      this.api.getEmployees().subscribe(res => this.employees = res.data || []);
+    }
   }
 
   loadData() {
@@ -145,11 +158,6 @@ export class WorkEntriesComponent implements OnInit {
 
   onFilterChange() {
     this.filter.pageNumber = 1;
-    this.loadData();
-  }
-
-  goToPage(page: number) {
-    this.filter.pageNumber = page;
     this.loadData();
   }
 

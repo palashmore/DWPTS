@@ -930,6 +930,9 @@ import { DailyWorkScreen, WorkEntry, Category, Meeting } from '../../core/models
 })
 export class DailyWorkComponent implements OnInit {
   selectedDate: string = new Date().toISOString().substring(0, 10);
+  selectedEmployeeCode: string = 'ALL';
+  isAdmin = false;
+  employeeList: any[] = [];
   screenData: DailyWorkScreen | null = null;
 
   readonly DEFAULT_CATEGORIES: Category[] = [
