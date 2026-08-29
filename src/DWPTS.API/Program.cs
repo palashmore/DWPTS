@@ -79,6 +79,7 @@ builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
+builder.Services.AddScoped<DWPTS.Application.Features.AI.IAIEngineService, DWPTS.Application.Features.AI.AIEngineService>();
 
 // Hosted Background Services
 builder.Services.AddHostedService<DailyCapacityCalculationJob>();

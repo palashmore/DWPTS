@@ -62,6 +62,14 @@ export const routes: Routes = [
       {
         path: 'monitoring',
         loadComponent: () => import('./features/monitoring/monitoring.component').then(m => m.MonitoringComponent)
+      },
+      {
+        path: 'ai-assistant',
+        loadComponent: () => import('./features/ai-assistant/ai-assistant.component').then(m => m.AIAssistantComponent)
+      },
+      {
+        path: 'knowledge',
+        loadComponent: () => import('./features/knowledge/knowledge.component').then(m => m.KnowledgeComponent)
       }
     ]
   },

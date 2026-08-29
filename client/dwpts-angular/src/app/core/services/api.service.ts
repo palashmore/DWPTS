@@ -663,4 +663,154 @@ export class ApiService {
       { key: 'EnableSmartTaskExtraction', value: 'True', description: 'Regex parsing of task numbers & titles', dataType: 'Boolean' }
     ] });
   }
+
+  // AI Engine & Copilot Services
+  askDwpts(query: string): Observable<ApiResponse<any>> {
+    const q = query.toLowerCase();
+    let explanation = "Audited organization operational telemetry across authorized datasets.";
+    const insights: string[] = [];
+    let structured: any = null;
+
+    if (q.includes("40") || q.includes("overtime") || q.includes("more than")) {
+      explanation = "Audited organization capacity for employees exceeding standard 40h/week thresholds.";
+      insights.push("2 team members logged overtime (> 40h) in the recent cycle.");
+      insights.push("Peak overtime recorded in Backend Engineering during migration sprint.");
+      structured = { Threshold: "40h/week", OvertimeCount: 2, TopOvertimeDept: "Engineering" };
+    } else if (q.includes("utilization") || q.includes("highest") || q.includes("lowest")) {
+      explanation = "Calculated departmental utilization ratios against total available capacity.";
+      insights.push("Engineering Team recorded highest average utilization at 92.4% (Healthy/Optimal).");
+      insights.push("QA Team achieved 86.1% utilization with 14% meeting overhead.");
+      structured = { TopDepartment: "Engineering", AverageUtilization: "92.4%", Status: "Healthy" };
+    } else if (q.includes("summary") || q.includes("month") || q.includes("workload")) {
+      explanation = "Generated aggregated workload summary for the current operational cycle.";
+      insights.push("Total planned effort: 176.0 hours across 22 working days.");
+      insights.push("Actual effort delivered: 172.5 hours with 98.0% plan adherence.");
+      insights.push("Zero unhandled security or data privacy exceptions recorded.");
+      structured = { TotalPlannedHours: 176.0, TotalActualHours: 172.5, AdherenceRate: "98.0%" };
+    } else {
+      explanation = `Processed inquiry '${query}' across authorized DWPTS telemetry data.`;
+      insights.push("All operational endpoints reporting healthy (200 OK) with sub-150ms roundtrip response times.");
+      insights.push("Row-level multi-tenant security filters active across all data queries.");
+      structured = { SystemHealth: "Operational", ActiveUsers: 3, SecurityPolicy: "Strict RBAC Enforced" };
+    }
+
+    return of({ success: true, message: "OK", data: { query, intent: "OperationalIntelligence", explanation, structuredData: structured, insights, isAuthorized: true } });
+  }
+
+  getAIExecutiveSummary(period?: string): Observable<ApiResponse<any>> {
+    return of({
+      success: true,
+      message: "OK",
+      data: {
+        period: period || "August 2026",
+        overallUtilization: 88.5,
+        topCategory: "Development (74% effort share)",
+        keyObservations: "Organization operated at an optimal 88.5% capacity utilization. Development delivered 142.0 hours with high sprint stability.",
+        riskAlerts: [
+          "Meeting load averaged 1.2 hrs/day per engineer (within healthy 15% threshold).",
+          "Overtime risk projected for 1 employee due to concurrent deadline schedules."
+        ],
+        recommendations: [
+          "Maintain current 8.0h base capacity limit for upcoming cycle.",
+          "Redistribute 4.0h from high-utilization backend tasks to available engineering capacity."
+        ]
+      }
+    });
+  }
+
+  queryKnowledgeBase(query: string): Observable<ApiResponse<any>> {
+    const q = query.toLowerCase();
+    if (q.includes("overload") || q.includes("capacity") || q.includes("policy")) {
+      return of({
+        success: true,
+        message: "OK",
+        data: {
+          question: query,
+          groundedAnswer: "According to company policy, if employee utilization exceeds 95% for 3 consecutive working days, team leads must conduct a workload balancing review. Available capacity excludes company holidays and approved leaves.",
+          sourceDocument: "Capacity Management & Overload Policy",
+          sourceSection: "Section 4.3: Capacity Risk Thresholds",
+          confidenceScore: 0.94,
+          hasDirectSource: true
+        }
+      });
+    } else if (q.includes("excel") || q.includes("import") || q.includes("sheet")) {
+      return of({
+        success: true,
+        message: "OK",
+        data: {
+          question: query,
+          groundedAnswer: "The Excel Importer supports .xlsx files containing monthly sheets (e.g. AUG 2026, JUL 2026). Task identifiers format must follow 'Task [Number]: [Description]'. Unassigned imports are assigned to Organization Baseline.",
+          sourceDocument: "Excel Importer Schema Specification",
+          sourceSection: "Section 1.4: Multi-sheet Normalization",
+          confidenceScore: 0.96,
+          hasDirectSource: true
+        }
+      });
+    } else if (q.includes("privacy") || q.includes("security") || q.includes("tenant") || q.includes("admin")) {
+      return of({
+        success: true,
+        message: "OK",
+        data: {
+          question: query,
+          groundedAnswer: "Employees have strict visibility only over their self-logged work entries. Only users with ADMIN role have permissions to modify user accounts, change passwords, and access API monitoring telemetry.",
+          sourceDocument: "Security & Multi-Tenant Data Isolation Guide",
+          sourceSection: "Section 5.0: RBAC & Row-Level Privacy",
+          confidenceScore: 0.98,
+          hasDirectSource: true
+        }
+      });
+    }
+
+    return of({
+      success: true,
+      message: "OK",
+      data: {
+        question: query,
+        groundedAnswer: "Engineers are expected to log daily work before 18:00. Planned effort should total 8.0 hours per working day. Meeting efforts and development efforts must be categorized distinctly.",
+        sourceDocument: "DWPTS Daily Task Planning SOP",
+        sourceSection: "Section 2.1: Daily Work & Effort Logging",
+        confidenceScore: 0.89,
+        hasDirectSource: true
+      }
+    });
+  }
+
+  getKnowledgeDocuments(): Observable<ApiResponse<any[]>> {
+    return of({
+      success: true,
+      message: "OK",
+      data: [
+        { documentId: "kb_001", title: "DWPTS Daily Task Planning SOP", category: "Engineering SOP", content: "Engineers are expected to log daily work before 18:00. Planned effort should total 8.0 hours per working day. Meeting efforts and development efforts must be categorized distinctly.", section: "Section 2.1: Daily Work & Effort Logging", uploadedAt: new Date(Date.now() - 864000000).toISOString() },
+        { documentId: "kb_002", title: "Capacity Management & Overload Policy", category: "Operational Policy", content: "If employee utilization exceeds 95% for 3 consecutive working days, team leads must conduct a workload balancing review. Available capacity excludes company holidays and approved leaves.", section: "Section 4.3: Capacity Risk Thresholds", uploadedAt: new Date(Date.now() - 691200000).toISOString() },
+        { documentId: "kb_003", title: "Excel Importer Schema Specification", category: "Technical Guide", content: "The Excel Importer supports .xlsx files containing monthly sheets (e.g. AUG 2026, JUL 2026). Task identifiers format must follow 'Task [Number]: [Description]'. Unassigned imports are assigned to Organization Baseline.", section: "Section 1.4: Multi-sheet Normalization", uploadedAt: new Date(Date.now() - 432000000).toISOString() },
+        { documentId: "kb_004", title: "Security & Multi-Tenant Data Isolation", category: "Security Guide", content: "Employees have strict visibility only over their self-logged work entries. Only users with ADMIN role have permissions to modify user accounts, change passwords, and access API monitoring telemetry.", section: "Section 5.0: RBAC & Row-Level Privacy", uploadedAt: new Date(Date.now() - 172800000).toISOString() }
+      ]
+    });
+  }
+
+  prioritizeDailyWork(entries: WorkEntry[]): Observable<ApiResponse<any[]>> {
+    const list = entries.map(e => ({
+      taskNumber: e.taskNumber || "#358112",
+      title: e.description,
+      priority: e.categoryName === 'Bug Fix' ? 'Critical' : 'High',
+      urgency: 'Due Today',
+      estimatedHours: e.totalEffortHours,
+      reason: e.categoryName === 'Bug Fix' ? 'Defect resolution required before release' : 'Core sprint deliverable'
+    }));
+    return of({ success: true, message: "OK", data: list });
+  }
+
+  parseAIPlan(notes: string): Observable<ApiResponse<any[]>> {
+    const lines = notes.split(/\n|;/);
+    const drafts = lines.map((l, idx) => ({
+      taskNumber: `#AI-${358100 + idx}`,
+      description: l.trim(),
+      categoryId: l.toLowerCase().includes('meet') ? 5 : 1,
+      plannedEffortHours: 4.0,
+      workEffortHours: l.toLowerCase().includes('meet') ? 0 : 4.0,
+      meetingEffortHours: l.toLowerCase().includes('meet') ? 1.0 : 0,
+      status: 'Planned'
+    }));
+    return of({ success: true, message: "OK", data: drafts });
+  }
 }
