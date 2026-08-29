@@ -17,7 +17,15 @@ using DWPTS.Infrastructure.BackgroundJobs;
 using DWPTS.Infrastructure.Data;
 using DWPTS.Infrastructure.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = AppContext.BaseDirectory
+});
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
+builder.Configuration.AddEnvironmentVariables();
 
 // Configure Serilog Structured Logging
 Log.Logger = new LoggerConfiguration()
