@@ -58,8 +58,8 @@ import { ApiService } from '../../core/services/api.service';
                 <td><span class="mono-badge">{{ emp.employeeCode }}</span></td>
                 <td><strong>{{ emp.fullName }}</strong></td>
                 <td>
-                  <span style="font-size: 12px; color: var(--gold-highlight);">@{{ emp.username || emp.employeeCode.toLowerCase() }}</span>
-                  <div style="font-size: 11px; color: var(--text-muted);">{{ emp.email || (emp.username || 'user') + '@company.com' }}</div>
+                  <span style="font-size: 12px; color: var(--gold-highlight);">@{{ emp.username || emp.employeeCode }}</span>
+                  <div style="font-size: 11px; color: var(--text-muted);">{{ emp.email || emp.username + '@company.com' }}</div>
                 </td>
                 <td>
                   <span class="badge" [ngClass]="emp.role === 'ADMIN' ? 'status-inprogress' : (emp.role === 'MANAGER' ? 'status-optimal' : 'status-completed')">
@@ -390,7 +390,7 @@ export class AdminComponent implements OnInit {
     this.editingEmpCode = emp.employeeCode;
     this.userForm = {
       username: emp.username || emp.employeeCode.toLowerCase(),
-      email: emp.email || `${emp.username || emp.employeeCode.toLowerCase()}@company.com`,
+      email: emp.email || (emp.username || emp.employeeCode.toLowerCase()) + '@company.com',
       password: emp.password || '',
       firstName: '',
       lastName: '',
