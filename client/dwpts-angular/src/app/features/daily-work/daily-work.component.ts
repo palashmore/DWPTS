@@ -1155,20 +1155,30 @@ export class DailyWorkComponent implements OnInit {
   parseAndInsertAiPlan() {
     if (!this.aiPlanText.trim()) return;
     this.isAiPlanning = true;
-    this.api.parseAIPlan(this.aiPlanText).subscribe({
+    this.api.parseAIPlan(this.aiPlanText, this.selectedDate).subscribe({
       next: res => {
         this.isAiPlanning = false;
         const drafts = res.data || [];
+        if (drafts.length === 0) {
+          this.showToast('Could not parse task from input', 'error');
+          return;
+        }
+
+        let navDate = this.selectedDate;
         drafts.forEach(d => {
+          const entryDate = d.targetDate || this.selectedDate;
+          navDate = entryDate;
           this.api.createWorkEntry({
             ...d,
-            workDate: this.selectedDate,
+            workDate: entryDate,
             plannedEffortHours: d.plannedEffortHours || (d.workEffortHours + d.meetingEffortHours) || 4.0,
             status: 'In Progress',
             remarks: 'AI Quick Planned'
           }).subscribe();
         });
-        this.showToast(`✨ ${drafts.length} task(s) inserted into Daily Work by AI!`, 'success');
+
+        this.selectedDate = navDate;
+        this.showToast(`✨ ${drafts.length} task(s) inserted into ${navDate} by AI!`, 'success');
         this.showAiPlanModal = false;
         setTimeout(() => this.loadData(), 400);
       },
