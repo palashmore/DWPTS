@@ -251,7 +251,7 @@ export class CalendarComponent implements OnInit {
   combinedTotalHours = 0;
   workingDaysCount = 0;
   loggedDaysCount = 0;
-  holidaysCount = 1;
+  holidaysCount = 0;
   leaveDaysCount = 0;
 
   constructor(private api: ApiService, private router: Router, private signalR: SignalRService) {}
@@ -298,7 +298,19 @@ export class CalendarComponent implements OnInit {
       const curDate = new Date(this.year, this.month - 1, d);
       const dayIdx = curDate.getDay();
       const isWeekend = dayIdx === 0 || dayIdx === 6;
-      const isHoliday = d === 15; // Sample Independence Day
+            // Official Public Holidays (e.g. 15 Aug Independence Day, 26 Jan Republic Day, 2 Oct Gandhi Jayanti)
+      const officialHolidays: Record<string, string> = {
+        '2026-01-26': 'Republic Day',
+        '2026-08-15': 'Independence Day',
+        '2026-10-02': 'Gandhi Jayanti',
+        '2026-12-25': 'Christmas'
+      };
+
+      const customHolidays: any[] = JSON.parse(localStorage.getItem('dwpts_holidays') || '[]');
+      const customHol = customHolidays.find(h => (h.holidayDate || '').substring(0, 10) === dateStr);
+
+      const holidayName = officialHolidays[dateStr] || (customHol ? customHol.holidayName : null);
+      const isHoliday = !!holidayName;
       const dateStr = `${this.year}-${String(this.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
       if (!isWeekend && !isHoliday) {
@@ -324,7 +336,7 @@ export class CalendarComponent implements OnInit {
         date: dateStr,
         isWeekend: isWeekend,
         isHoliday: isHoliday,
-        holidayName: isHoliday ? 'Public Holiday' : undefined,
+        holidayName: holidayName || undefined,
         isLeave: false,
         capacityHours: isWeekend || isHoliday ? 0 : 8,
         plannedHours: isWeekend || isHoliday ? 0 : 8,
