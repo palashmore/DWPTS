@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { CalendarMonth, CalendarDay } from '../../core/models/models';
+import { CalendarDay, WorkEntry } from '../../core/models/models';
 
 @Component({
   selector: 'app-calendar',
@@ -28,15 +28,15 @@ import { CalendarMonth, CalendarDay } from '../../core/models/models';
       <div class="kpi-grid">
         <div class="kpi-card">
           <span class="kpi-label">Total Work Hours</span>
-          <span class="kpi-value" style="color: var(--text-gold);">{{ totalWorkHours }}h</span>
+          <span class="kpi-value" style="color: var(--text-gold);">{{ totalWorkHours.toFixed(1) }}h</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Meeting Hours</span>
-          <span class="kpi-value" style="color: #60A5FA;">{{ totalMeetingHours }}h</span>
+          <span class="kpi-value" style="color: #60A5FA;">{{ totalMeetingHours.toFixed(1) }}h</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Combined Total</span>
-          <span class="kpi-value" style="color: var(--gold-primary);">{{ combinedTotalHours }}h</span>
+          <span class="kpi-value" style="color: var(--gold-primary);">{{ combinedTotalHours.toFixed(1) }}h</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Working Days</span>
@@ -62,24 +62,27 @@ import { CalendarMonth, CalendarDay } from '../../core/models/models';
               <span class="day-weekday">{{ day.dayName.substring(0, 3) }}</span>
             </div>
 
-            <div class="cell-body" *ngIf="!day.isWeekend && !day.isHoliday && day.totalHours > 0">
-              <div class="cell-hours">{{ day.totalHours }}h</div>
-              <div class="cell-breakdown">W: {{ day.workHours }}h | M: {{ day.meetingHours }}h</div>
+            <!-- If day has logged tasks/hours (Weekday or Weekend) -->
+            <div class="cell-body" *ngIf="day.totalHours > 0">
+              <div class="cell-hours">{{ day.totalHours.toFixed(1) }}h</div>
+              <div class="cell-breakdown">W: {{ day.workHours.toFixed(1) }}h | M: {{ day.meetingHours.toFixed(1) }}h</div>
             </div>
 
-            <div class="cell-body special-badge" *ngIf="day.isHoliday">
+            <!-- Special Badges when no tasks logged -->
+            <div class="cell-body special-badge" *ngIf="day.totalHours === 0 && day.isHoliday">
               <span class="special-text">🎉 Holiday</span>
             </div>
 
-            <div class="cell-body special-badge leave-badge" *ngIf="day.isLeave">
+            <div class="cell-body special-badge leave-badge" *ngIf="day.totalHours === 0 && day.isLeave">
               <span class="special-text">🏖️ Leave</span>
             </div>
 
-            <div class="cell-body weekend-text" *ngIf="day.isWeekend">
+            <div class="cell-body weekend-text" *ngIf="day.totalHours === 0 && day.isWeekend">
               <span>Weekend</span>
             </div>
 
-            <div class="cell-footer" *ngIf="!day.isWeekend && day.totalHours > 0">
+            <!-- Utilization Footer Pill -->
+            <div class="cell-footer" *ngIf="day.totalHours > 0">
               <span class="badge" [ngClass]="day.totalHours >= 8 ? 'status-completed' : 'status-ongoing'">
                 {{ day.totalHours >= 8 ? '100% Utilized' : (day.totalHours / 8 * 100).toFixed(0) + '%' }}
               </span>
@@ -99,111 +102,160 @@ import { CalendarMonth, CalendarDay } from '../../core/models/models';
 
     .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
     .kpi-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
       display: flex;
       flex-direction: column;
-      box-shadow: var(--shadow-card);
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
     }
-    .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    .kpi-value { font-size: 22px; font-weight: 800; margin-top: 4px; }
+    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .kpi-value { font-size: 22px; font-weight: 800; }
 
-    .calendar-grid-container { padding: 24px; background: var(--bg-surface); }
+    .calendar-grid-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-md);
+    }
+
     .calendar-header-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       text-align: center;
+      font-size: 12px;
       font-weight: 800;
-      font-size: 11.5px;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border-subtle);
+      letter-spacing: 0.06em;
+      color: var(--text-gold);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-gold-subtle);
     }
-    .calendar-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 14px; }
+
+    .calendar-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
 
     .day-cell {
-      min-height: 105px;
+      min-height: 108px;
       background: var(--bg-navy-deep);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: var(--transition-smooth);
+      border-radius: var(--radius-lg);
+      padding: 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-
-      &:hover {
-        border-color: var(--gold-primary);
-        transform: translateY(-2px);
-        box-shadow: var(--gold-glow-subtle);
-        background: var(--bg-surface-elevated);
-      }
-
-      &.empty { background: transparent; border: none; cursor: default; box-shadow: none; transform: none; }
-      &.complete { border-left: 4px solid #34D399; }
-      &.partial { border-left: 4px solid #FBBF24; }
-      &.weekend { background: rgba(15, 23, 42, 0.4); opacity: 0.6; }
-      &.holiday { border-left: 4px solid #F87171; background: rgba(248, 113, 113, 0.08); }
+      cursor: pointer;
+      transition: var(--transition-bounce);
+    }
+    .day-cell:hover {
+      transform: translateY(-2px);
+      border-color: var(--gold-primary);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+    .day-cell.empty {
+      background: transparent;
+      border: none;
+      cursor: default;
+    }
+    .day-cell.weekend {
+      background: rgba(15, 23, 42, 0.4);
+      opacity: 0.85;
+    }
+    .day-cell.holiday {
+      border-color: rgba(248, 113, 113, 0.4);
+      background: rgba(248, 113, 113, 0.05);
+    }
+    .day-cell.complete {
+      border-left: 3px solid #34D399;
+    }
+    .day-cell.partial {
+      border-left: 3px solid #F59E0B;
     }
 
-    .cell-top { display: flex; justify-content: space-between; align-items: center; }
-    .day-num { font-weight: 800; font-size: 14px; color: var(--text-primary); }
-    .day-weekday { font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .cell-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .day-num { font-size: 14px; font-weight: 800; color: var(--text-primary); }
+    .day-weekday { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
 
-    .cell-body { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; }
+    .cell-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 4px 0;
+    }
     .cell-hours { font-size: 16px; font-weight: 800; color: var(--text-gold); }
-    .cell-breakdown { font-size: 10.5px; color: var(--text-secondary); font-weight: 500; }
+    .cell-breakdown { font-size: 10px; color: var(--text-muted); }
 
-    .special-badge { background: rgba(248, 113, 113, 0.15); padding: 4px 6px; border-radius: 4px; }
+    .weekend-text { font-size: 11px; color: var(--text-muted); font-weight: 600; text-align: center; margin: auto 0; }
+    .special-badge { text-align: center; margin: auto 0; }
     .special-text { font-size: 11px; font-weight: 700; color: #F87171; }
-    .leave-badge { background: rgba(251, 191, 36, 0.15); .special-text { color: #FBBF24; } }
-    .weekend-text { font-size: 11px; color: var(--text-muted); font-style: italic; }
+    .leave-badge .special-text { color: #60A5FA; }
 
-    .cell-footer { display: flex; justify-content: flex-start; }
-
-    @media (max-width: 1024px) {
-      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .cell-footer { display: flex; justify-content: flex-end; }
+    .badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      display: inline-block;
     }
-
-    @media (max-width: 768px) {
-      .page-title-row { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .month-nav { width: 100%; justify-content: space-between; }
-      .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .calendar-grid-container { padding: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .calendar-header-grid, .calendar-days-grid { min-width: 600px; }
-    }
-
-    @media (max-width: 480px) {
-      .kpi-grid { grid-template-columns: 1fr; }
-      .month-title { min-width: 110px; font-size: 14px; }
-    }
+    .status-completed { background: rgba(52, 211, 153, 0.15); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .status-ongoing { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
   `]
 })
 export class CalendarComponent implements OnInit {
-  year = new Date().getFullYear();
-  month = new Date().getMonth() + 1;
-  monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  
+  year = 2026;
+  month = 8;
+  monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
   days: CalendarDay[] = [];
   leadingEmptyDays: number[] = [];
 
-  totalWorkHours = 160;
-  totalMeetingHours = 16;
-  combinedTotalHours = 176;
-  workingDaysCount = 22;
+  totalWorkHours = 0;
+  totalMeetingHours = 0;
+  combinedTotalHours = 0;
+  workingDaysCount = 0;
   holidaysCount = 1;
   leaveDaysCount = 0;
 
   constructor(private api: ApiService, private router: Router, private signalR: SignalRService) {}
 
   ngOnInit() {
-    this.generateCalendarDays();
+    this.loadCalendar();
     this.signalR.workEntryChanged$.subscribe(() => {
-      this.generateCalendarDays();
+      this.loadCalendar();
+    });
+  }
+
+  loadCalendar() {
+    this.api.syncWithCloud();
+    this.generateCalendarDays();
+    this.api.getMonthlyCalendar(this.year, this.month).subscribe({
+      next: res => {
+        if (res.success && res.data && res.data.days && res.data.days.length > 0) {
+          // Merge server days
+          this.days = res.data.days;
+          this.totalWorkHours = res.data.totalWorkHours || this.totalWorkHours;
+          this.totalMeetingHours = res.data.totalMeetingHours || this.totalMeetingHours;
+          this.combinedTotalHours = res.data.combinedTotalHours || this.combinedTotalHours;
+          this.workingDaysCount = res.data.workingDaysCount || this.workingDaysCount;
+        }
+      },
+      error: () => {}
     });
   }
 
@@ -212,6 +264,7 @@ export class CalendarComponent implements OnInit {
     const firstDayOfWeek = new Date(this.year, this.month - 1, 1).getDay();
     this.leadingEmptyDays = Array(firstDayOfWeek).fill(0);
 
+    const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem('dwpts_entries') || '[]');
     const generatedDays: CalendarDay[] = [];
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -224,23 +277,25 @@ export class CalendarComponent implements OnInit {
       const dayIdx = curDate.getDay();
       const isWeekend = dayIdx === 0 || dayIdx === 6;
       const isHoliday = d === 15; // Sample Independence Day
-      const isPastOrToday = d <= 28;
+      const dateStr = `${this.year}-${String(this.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-      let wHours = 0;
-      let mHours = 0;
-      let status = 'NoEntry';
+      // Calculate real entries from store
+      const dayEntries = allEntries.filter(e => (e.workDate || '').substring(0, 10) === dateStr);
+      let wHours = dayEntries.reduce((sum, e) => sum + Number(e.workEffortHours || 0), 0);
+      let mHours = dayEntries.reduce((sum, e) => sum + Number(e.meetingEffortHours || 0), 0);
+
+      // Baseline sample data for past working days if store has no entry
+      if (dayEntries.length === 0 && !isWeekend && !isHoliday && d <= 27) {
+        wHours = 7.5;
+        mHours = 0.5;
+      }
+
+      const totalH = wHours + mHours;
 
       if (!isWeekend && !isHoliday) {
         workDays++;
-        if (isPastOrToday) {
-          wHours = 7.5;
-          mHours = 0.5;
-          status = 'Complete';
-        } else {
-          wHours = 8.0;
-          mHours = 0.0;
-          status = 'Planned';
-        }
+      } else if (totalH > 0) {
+        workDays++;
       }
 
       workSum += wHours;
@@ -249,7 +304,7 @@ export class CalendarComponent implements OnInit {
       generatedDays.push({
         dayNumber: d,
         dayName: dayNames[dayIdx],
-        date: curDate.toISOString().substring(0, 10),
+        date: dateStr,
         isWeekend: isWeekend,
         isHoliday: isHoliday,
         holidayName: isHoliday ? 'Public Holiday' : undefined,
@@ -258,9 +313,9 @@ export class CalendarComponent implements OnInit {
         plannedHours: isWeekend || isHoliday ? 0 : 8,
         workHours: wHours,
         meetingHours: mHours,
-        totalHours: wHours + mHours,
-        entriesCount: wHours > 0 ? 1 : 0,
-        status: isWeekend ? 'Weekend' : isHoliday ? 'Holiday' : status
+        totalHours: totalH,
+        entriesCount: dayEntries.length || (wHours > 0 ? 1 : 0),
+        status: isHoliday ? 'Holiday' : isWeekend && totalH === 0 ? 'Weekend' : totalH >= 8 ? 'Complete' : 'Planned'
       });
     }
 
@@ -275,14 +330,14 @@ export class CalendarComponent implements OnInit {
     this.month += delta;
     if (this.month > 12) { this.month = 1; this.year++; }
     if (this.month < 1) { this.month = 12; this.year--; }
-    this.generateCalendarDays();
+    this.loadCalendar();
   }
 
   getDayClass(day: CalendarDay): string {
-    if (day.isWeekend) return 'weekend';
-    if (day.isHoliday) return 'holiday';
     if (day.totalHours >= 8) return 'complete';
     if (day.totalHours > 0) return 'partial';
+    if (day.isHoliday) return 'holiday';
+    if (day.isWeekend) return 'weekend';
     return '';
   }
 
