@@ -11,9 +11,9 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
 
   private readonly MASTER_USERS = [
-    { username: 'admin', email: 'admin@company.com', password: 'Admin@123', fullName: 'Admin User', role: 'ADMIN', empCode: 'EMP001', dept: 'Information Technology', desig: 'System Administrator' },
-    { username: 'manager', email: 'manager@company.com', password: 'Manager@123', fullName: 'Team Manager', role: 'MANAGER', empCode: 'EMP002', dept: 'Engineering', desig: 'Engineering Lead' },
-    { username: 'employee', email: 'employee@company.com', password: 'Employee@123', fullName: 'Software Engineer', role: 'EMPLOYEE', empCode: 'EMP003', dept: 'Engineering', desig: 'Senior Software Engineer' }
+    { username: 'admin', email: 'admin@company.com', password: 'Admin@123', fullName: 'Admin User', role: 'ADMIN', empCode: 'EMP_ADMIN', dept: 'Information Technology', desig: 'System Administrator' },
+    { username: 'manager', email: 'manager@company.com', password: 'Manager@123', fullName: 'Team Manager', role: 'MANAGER', empCode: 'EMP_MGR', dept: 'Engineering', desig: 'Engineering Lead' },
+    { username: 'employee', email: 'employee@company.com', password: 'Employee@123', fullName: 'Software Engineer', role: 'EMPLOYEE', empCode: 'EMP_DEV', dept: 'Engineering', desig: 'Senior Software Engineer' }
   ];
 
   constructor(private http: HttpClient) {
@@ -69,7 +69,6 @@ export class AuthService {
           const userMatches = (uName === inputUser || uEmail === inputUser || uCode === inputUser || uFull === inputUser || uFirst === inputUser);
           if (!userMatches) return false;
 
-          // Check password: user's specific password or defaults
           const passMatches = (u.password && u.password === inputPass) || inputPass === 'Admin@123' || inputPass === 'Password@123' || inputPass === '12345' || inputPass === '123456';
           return passMatches;
         });
@@ -80,13 +79,17 @@ export class AuthService {
           return throwError(() => new Error('Invalid username or password. Please check your credentials.'));
         }
 
+        const normalizedUsername = (matched.username || inputUser).toLowerCase();
+        const normalizedFullName = matched.fullName || (matched.firstName ? `${matched.firstName} ${matched.lastName || ''}`.trim() : inputUser);
+        const normalizedEmpCode = matched.employeeCode || matched.empCode || ('EMP_' + normalizedUsername.toUpperCase());
+
         const validUser: UserProfile = {
           userId: masterMatch ? (masterMatch.username === 'admin' ? 1 : 2) : (matched.userId || Date.now()),
-          username: matched.username || inputUser,
-          email: matched.email || `${matched.username || inputUser}@company.com`,
-          employeeId: matched.employeeId || 1,
-          employeeCode: matched.employeeCode || matched.empCode || 'EMP001',
-          fullName: matched.fullName || 'User',
+          username: normalizedUsername,
+          email: matched.email || `${normalizedUsername}@company.com`,
+          employeeId: matched.employeeId || Math.abs(this.hashCode(normalizedUsername)),
+          employeeCode: normalizedEmpCode,
+          fullName: normalizedFullName,
           department: matched.department || matched.dept || 'Engineering',
           designation: matched.designation || matched.desig || 'Software Engineer',
           dailyCapacityHours: Number(matched.dailyCapacityHours || 8),
@@ -94,7 +97,7 @@ export class AuthService {
         };
 
         const mockResp: LoginResponse = {
-          token: `dwpts-verified-token-${Date.now()}`,
+          token: `dwpts-verified-token-${normalizedUsername}-${Date.now()}`,
           refreshToken: 'refresh-token',
           expiresAt: new Date(Date.now() + 86400000).toISOString(),
           user: validUser
@@ -107,6 +110,15 @@ export class AuthService {
         return of({ success: true, message: 'Authentication successful', data: mockResp });
       })
     );
+  }
+
+  private hashCode(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return hash === 0 ? 1 : hash;
   }
 
   logout(): void {

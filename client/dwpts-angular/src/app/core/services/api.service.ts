@@ -28,18 +28,27 @@ export class ApiService {
 
   public isAdminOrManager(): boolean {
     const u = this.getCurrentUser();
-    if (!u) return true;
+    if (!u) return false;
     const roles = (u.roles || []).map(r => String(r).toUpperCase());
     const username = String(u.username || '').toLowerCase();
-    return roles.includes('ADMIN') || roles.includes('MANAGER') || username.includes('admin');
+    return roles.includes('ADMIN') || roles.includes('MANAGER') || username === 'admin';
   }
 
   private isEntryOwner(entry: WorkEntry, user: UserProfile | null): boolean {
-    if (!user) return true;
-    if (entry.employeeCode && user.employeeCode && entry.employeeCode === user.employeeCode) return true;
-    if (entry.username && user.username && entry.username.toLowerCase() === user.username.toLowerCase()) return true;
-    if (entry.employeeName && user.fullName && entry.employeeName.toLowerCase() === user.fullName.toLowerCase()) return true;
-    if (entry.employeeId && user.employeeId && entry.employeeId === user.employeeId) return true;
+    if (!user) return false;
+    const targetUser = (user.username || '').toLowerCase();
+    const targetFullName = (user.fullName || '').toLowerCase();
+    const targetCode = (user.employeeCode || '').toLowerCase();
+
+    // Match by username
+    if (entry.username && entry.username.toLowerCase() === targetUser) return true;
+
+    // Match by full name
+    if (entry.employeeName && entry.employeeName.toLowerCase() === targetFullName) return true;
+
+    // Match by employee code
+    if (entry.employeeCode && entry.employeeCode.toLowerCase() === targetCode) return true;
+
     return false;
   }
 
@@ -62,38 +71,11 @@ export class ApiService {
 
     if (!localStorage.getItem(this.LS_USERS)) {
       const defUsers = [
-        { employeeCode: 'EMP001', fullName: 'Admin User', username: 'admin', department: 'Information Technology', designation: 'System Administrator', dailyCapacityHours: 8, isActive: true, role: 'ADMIN' },
-        { employeeCode: 'EMP002', fullName: 'Team Manager', username: 'manager', department: 'Engineering', designation: 'Engineering Lead', dailyCapacityHours: 8, isActive: true, role: 'MANAGER' },
-        { employeeCode: 'EMP003', fullName: 'Software Engineer', username: 'employee', department: 'Engineering', designation: 'Senior Software Engineer', dailyCapacityHours: 8, isActive: true, role: 'EMPLOYEE' }
+        { employeeCode: 'EMP001', fullName: 'Admin User', username: 'admin', email: 'admin@company.com', password: 'Admin@123', department: 'Information Technology', designation: 'System Administrator', dailyCapacityHours: 8, isActive: true, role: 'ADMIN' },
+        { employeeCode: 'EMP002', fullName: 'Team Manager', username: 'manager', email: 'manager@company.com', password: 'Manager@123', department: 'Engineering', designation: 'Engineering Lead', dailyCapacityHours: 8, isActive: true, role: 'MANAGER' },
+        { employeeCode: 'EMP003', fullName: 'Software Engineer', username: 'employee', email: 'employee@company.com', password: 'Employee@123', department: 'Engineering', designation: 'Senior Software Engineer', dailyCapacityHours: 8, isActive: true, role: 'EMPLOYEE' }
       ];
       localStorage.setItem(this.LS_USERS, JSON.stringify(defUsers));
-    }
-
-    if (!localStorage.getItem(this.LS_ENTRIES)) {
-      const defEntries: WorkEntry[] = [
-        {
-          workEntryId: 1,
-          employeeId: 1,
-          employeeCode: 'EMP001',
-          employeeName: 'Admin User',
-          username: 'admin',
-          workDate: new Date().toISOString().substring(0, 10),
-          taskNumber: '358112',
-          description: 'Task 358112: Dev : Password Reset requirement in User Account utility',
-          categoryId: 1,
-          categoryName: 'Development',
-          categoryColor: '#60A5FA',
-          meetingEffortHours: 0,
-          workEffortHours: 8,
-          totalEffortHours: 8,
-          plannedEffortHours: 8,
-          varianceHours: 0,
-          status: 'In Progress',
-          remarks: 'Initial implementation and self-tested',
-          createdAt: new Date().toISOString()
-        }
-      ];
-      localStorage.setItem(this.LS_ENTRIES, JSON.stringify(defEntries));
     }
   }
 
@@ -110,7 +92,10 @@ export class ApiService {
     if (!isAdmin) {
       dayEntries = dayEntries.filter(e => this.isEntryOwner(e, user));
     } else if (selectedEmpCode && selectedEmpCode !== 'ALL') {
-      dayEntries = dayEntries.filter(e => e.employeeCode === selectedEmpCode || (e.username && e.username.toLowerCase() === selectedEmpCode.toLowerCase()));
+      dayEntries = dayEntries.filter(e => 
+        (e.employeeCode && e.employeeCode.toLowerCase() === selectedEmpCode.toLowerCase()) || 
+        (e.username && e.username.toLowerCase() === selectedEmpCode.toLowerCase())
+      );
     }
 
     const totalWork = dayEntries.reduce((sum, e) => sum + (e.workEffortHours || 0), 0);
@@ -157,7 +142,10 @@ export class ApiService {
     if (!isAdmin) {
       entries = entries.filter(e => this.isEntryOwner(e, user));
     } else if (filter.employeeCode && filter.employeeCode !== 'ALL') {
-      entries = entries.filter(e => e.employeeCode === filter.employeeCode || (e.username && e.username.toLowerCase() === filter.employeeCode.toLowerCase()));
+      entries = entries.filter(e => 
+        (e.employeeCode && e.employeeCode.toLowerCase() === filter.employeeCode.toLowerCase()) || 
+        (e.username && e.username.toLowerCase() === filter.employeeCode.toLowerCase())
+      );
     }
 
     if (filter.searchTerm) {
@@ -202,9 +190,9 @@ export class ApiService {
     const newEntry: WorkEntry = {
       workEntryId: Date.now(),
       employeeId: user?.employeeId || 1,
-      employeeCode: user?.employeeCode || 'EMP001',
+      employeeCode: user?.employeeCode || 'EMP_USER',
       employeeName: user?.fullName || 'User',
-      username: user?.username || 'user',
+      username: (user?.username || 'user').toLowerCase(),
       workDate: entry.workDate,
       taskNumber: entry.taskNumber,
       description: entry.description,
@@ -383,13 +371,13 @@ export class ApiService {
     const mockDash: DashboardSummary = {
       date: todayStr,
       capacityHours: capacity,
-      plannedHours: totalPlanned || capacity,
-      actualHours: totalActual || capacity,
+      plannedHours: totalPlanned || (todayEntries.length > 0 ? totalPlanned : capacity),
+      actualHours: totalActual,
       meetingHours: totalMeeting,
-      workHours: totalWork || capacity,
+      workHours: totalWork,
       remainingHours: Math.max(0, capacity - totalActual),
       overtimeHours: Math.max(0, totalActual - capacity),
-      utilizationPercentage: capacity > 0 ? Math.round((totalActual / capacity) * 100) : 100,
+      utilizationPercentage: capacity > 0 ? Math.round((totalActual / capacity) * 100) : 0,
       weeklyActualHours: totalActual,
       monthlyActualHours: totalActual,
       todayEntries: todayEntries,
@@ -529,9 +517,9 @@ export class ApiService {
       entries.unshift({
         workEntryId: Date.now() + idx,
         employeeId: user?.employeeId || 1,
-        employeeCode: user?.employeeCode || 'EMP001',
+        employeeCode: user?.employeeCode || 'EMP_USER',
         employeeName: user?.fullName || 'User',
-        username: user?.username || 'user',
+        username: (user?.username || 'user').toLowerCase(),
         workDate: r.date || new Date().toISOString().substring(0, 10),
         taskNumber: r.normalizedTaskNumber || 'TASK',
         description: r.rawTask || r.normalizedTitle || 'Imported Task',
@@ -573,9 +561,9 @@ export class ApiService {
       entries = entries.filter(e => this.isEntryOwner(e, user));
     }
 
-    let csv = 'WorkEntryId,EmployeeName,WorkDate,TaskNumber,Description,Category,PlannedHours,MeetingHours,WorkHours,TotalHours,Status,Remarks\\n';
+    let csv = 'WorkEntryId,EmployeeName,WorkDate,TaskNumber,Description,Category,PlannedHours,MeetingHours,WorkHours,TotalHours,Status,Remarks\n';
     entries.forEach(e => {
-      csv += `${e.workEntryId},"${e.employeeName || 'User'}","${e.workDate}","${e.taskNumber}","${(e.description || '').replace(/"/g, '""')}","${e.categoryName}",${e.plannedEffortHours},${e.meetingEffortHours},${e.workEffortHours},${e.totalEffortHours},"${e.status}","${(e.remarks || '').replace(/"/g, '""')}\\n`;
+      csv += `${e.workEntryId},"${e.employeeName || 'User'}","${e.workDate}","${e.taskNumber}","${(e.description || '').replace(/"/g, '""')}","${e.categoryName}",${e.plannedEffortHours},${e.meetingEffortHours},${e.workEffortHours},${e.totalEffortHours},"${e.status}","${(e.remarks || '').replace(/"/g, '""')}\n`;
     });
     return of(new Blob([csv], { type: 'text/csv' }));
   }
@@ -595,11 +583,14 @@ export class ApiService {
   // Admin & User Management
   registerUser(user: any): Observable<ApiResponse<any>> {
     const users = JSON.parse(localStorage.getItem(this.LS_USERS) || '[]');
+    const cleanUsername = (user.username || '').toLowerCase().trim();
+    const cleanFullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.fullName || cleanUsername;
+    
     const newUser = {
       employeeCode: `EMP00${users.length + 1}`,
-      fullName: `${user.firstName} ${user.lastName}`.trim(),
-      username: user.username,
-      email: user.email,
+      fullName: cleanFullName,
+      username: cleanUsername,
+      email: user.email || `${cleanUsername}@company.com`,
       password: user.password || 'Password@123',
       department: user.department || 'Engineering',
       designation: user.designation || 'Software Engineer',
@@ -612,7 +603,6 @@ export class ApiService {
     return of({ success: true, message: 'User created in local storage', data: newUser });
   }
 
-  // User Update & Delete
   updateUser(employeeCode: string, user: any): Observable<ApiResponse<any>> {
     let users = JSON.parse(localStorage.getItem(this.LS_USERS) || '[]');
     users = users.map((u: any) => {
@@ -620,7 +610,7 @@ export class ApiService {
         return {
           ...u,
           fullName: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || u.fullName,
-          username: user.username || u.username,
+          username: (user.username || u.username || '').toLowerCase().trim(),
           email: user.email || u.email,
           password: user.password || u.password,
           department: user.department || u.department,
