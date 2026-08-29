@@ -39,8 +39,8 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
           <span class="kpi-value" style="color: var(--gold-primary);">{{ combinedTotalHours.toFixed(1) }}h</span>
         </div>
         <div class="kpi-card">
-          <span class="kpi-label">Working Days</span>
-          <span class="kpi-value" style="color: #34D399;">{{ workingDaysCount }}</span>
+          <span class="kpi-label">Logged Work Days</span>
+          <span class="kpi-value" style="color: #34D399;">{{ loggedDaysCount }} / {{ workingDaysCount }}</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Holidays / Leaves</span>
@@ -62,13 +62,13 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
               <span class="day-weekday">{{ day.dayName.substring(0, 3) }}</span>
             </div>
 
-            <!-- If day has logged tasks/hours (Weekday or Weekend) -->
+            <!-- Only display filled hours if actual tasks were logged -->
             <div class="cell-body" *ngIf="day.totalHours > 0">
               <div class="cell-hours">{{ day.totalHours.toFixed(1) }}h</div>
               <div class="cell-breakdown">W: {{ day.workHours.toFixed(1) }}h | M: {{ day.meetingHours.toFixed(1) }}h</div>
             </div>
 
-            <!-- Special Badges when no tasks logged -->
+            <!-- Empty / Unfilled States -->
             <div class="cell-body special-badge" *ngIf="day.totalHours === 0 && day.isHoliday">
               <span class="special-text">🎉 Holiday</span>
             </div>
@@ -81,11 +81,19 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
               <span>Weekend</span>
             </div>
 
+            <div class="cell-body unfilled-text" *ngIf="day.totalHours === 0 && !day.isWeekend && !day.isHoliday && !day.isLeave">
+              <span>No Tasks</span>
+            </div>
+
             <!-- Utilization Footer Pill -->
             <div class="cell-footer" *ngIf="day.totalHours > 0">
               <span class="badge" [ngClass]="day.totalHours >= 8 ? 'status-completed' : 'status-ongoing'">
                 {{ day.totalHours >= 8 ? '100% Utilized' : (day.totalHours / 8 * 100).toFixed(0) + '%' }}
               </span>
+            </div>
+
+            <div class="cell-footer" *ngIf="day.totalHours === 0 && !day.isWeekend && !day.isHoliday && !day.isLeave">
+              <span class="badge status-unfilled">0% Logged</span>
             </div>
           </div>
         </div>
@@ -179,6 +187,9 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
     .day-cell.partial {
       border-left: 3px solid #F59E0B;
     }
+    .day-cell.unfilled {
+      border-left: 3px solid rgba(148, 163, 184, 0.2);
+    }
 
     .cell-top {
       display: flex;
@@ -197,7 +208,16 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
     .cell-hours { font-size: 16px; font-weight: 800; color: var(--text-gold); }
     .cell-breakdown { font-size: 10px; color: var(--text-muted); }
 
-    .weekend-text { font-size: 11px; color: var(--text-muted); font-weight: 600; text-align: center; margin: auto 0; }
+    .weekend-text, .unfilled-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: center;
+      margin: auto 0;
+    }
+    .unfilled-text {
+      color: rgba(148, 163, 184, 0.6);
+    }
     .special-badge { text-align: center; margin: auto 0; }
     .special-text { font-size: 11px; font-weight: 700; color: #F87171; }
     .leave-badge .special-text { color: #60A5FA; }
@@ -212,6 +232,7 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
     }
     .status-completed { background: rgba(52, 211, 153, 0.15); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.3); }
     .status-ongoing { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-unfilled { background: rgba(148, 163, 184, 0.08); color: rgba(148, 163, 184, 0.6); border: 1px solid rgba(148, 163, 184, 0.15); }
   `]
 })
 export class CalendarComponent implements OnInit {
@@ -229,6 +250,7 @@ export class CalendarComponent implements OnInit {
   totalMeetingHours = 0;
   combinedTotalHours = 0;
   workingDaysCount = 0;
+  loggedDaysCount = 0;
   holidaysCount = 1;
   leaveDaysCount = 0;
 
@@ -269,7 +291,8 @@ export class CalendarComponent implements OnInit {
 
     let workSum = 0;
     let meetSum = 0;
-    let workDays = 0;
+    let totalWorkDaysInMonth = 0;
+    let loggedDays = 0;
 
     for (let d = 1; d <= totalDaysInMonth; d++) {
       const curDate = new Date(this.year, this.month - 1, d);
@@ -278,23 +301,18 @@ export class CalendarComponent implements OnInit {
       const isHoliday = d === 15; // Sample Independence Day
       const dateStr = `${this.year}-${String(this.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-      // Calculate real entries from store
-      const dayEntries = allEntries.filter(e => (e.workDate || '').substring(0, 10) === dateStr);
-      let wHours = dayEntries.reduce((sum, e) => sum + Number(e.workEffortHours || 0), 0);
-      let mHours = dayEntries.reduce((sum, e) => sum + Number(e.meetingEffortHours || 0), 0);
-
-      // Baseline sample data for past working days if store has no entry
-      if (dayEntries.length === 0 && !isWeekend && !isHoliday && d <= 27) {
-        wHours = 7.5;
-        mHours = 0.5;
+      if (!isWeekend && !isHoliday) {
+        totalWorkDaysInMonth++;
       }
 
+      // Calculate real entries from persistent store
+      const dayEntries = allEntries.filter(e => (e.workDate || '').substring(0, 10) === dateStr);
+      const wHours = dayEntries.reduce((sum, e) => sum + Number(e.workEffortHours || 0), 0);
+      const mHours = dayEntries.reduce((sum, e) => sum + Number(e.meetingEffortHours || 0), 0);
       const totalH = wHours + mHours;
 
-      if (!isWeekend && !isHoliday) {
-        workDays++;
-      } else if (totalH > 0) {
-        workDays++;
+      if (totalH > 0) {
+        loggedDays++;
       }
 
       workSum += wHours;
@@ -313,8 +331,8 @@ export class CalendarComponent implements OnInit {
         workHours: wHours,
         meetingHours: mHours,
         totalHours: totalH,
-        entriesCount: dayEntries.length || (wHours > 0 ? 1 : 0),
-        status: isHoliday ? 'Holiday' : isWeekend && totalH === 0 ? 'Weekend' : totalH >= 8 ? 'Complete' : 'Planned'
+        entriesCount: dayEntries.length,
+        status: isHoliday ? 'Holiday' : isWeekend && totalH === 0 ? 'Weekend' : totalH >= 8 ? 'Complete' : totalH > 0 ? 'Planned' : 'Unfilled'
       });
     }
 
@@ -322,7 +340,8 @@ export class CalendarComponent implements OnInit {
     this.totalWorkHours = workSum;
     this.totalMeetingHours = meetSum;
     this.combinedTotalHours = workSum + meetSum;
-    this.workingDaysCount = workDays;
+    this.workingDaysCount = totalWorkDaysInMonth;
+    this.loggedDaysCount = loggedDays;
   }
 
   changeMonth(delta: number) {
@@ -337,7 +356,7 @@ export class CalendarComponent implements OnInit {
     if (day.totalHours > 0) return 'partial';
     if (day.isHoliday) return 'holiday';
     if (day.isWeekend) return 'weekend';
-    return '';
+    return 'unfilled';
   }
 
   openDay(day: CalendarDay) {
