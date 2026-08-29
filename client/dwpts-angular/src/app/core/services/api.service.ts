@@ -94,7 +94,8 @@ export class ApiService {
           totalEffortHours: 7.0,
           varianceHours: 0,
           status: 'In Progress',
-          remarks: 'Automated test suite validation'
+          remarks: 'Automated test suite validation',
+          createdAt: new Date().toISOString()
         },
         {
           workEntryId: 102,
@@ -114,7 +115,8 @@ export class ApiService {
           totalEffortHours: 8.0,
           varianceHours: 0,
           status: 'In Progress',
-          remarks: 'Core backend development sprint'
+          remarks: 'Core backend development sprint',
+          createdAt: new Date().toISOString()
         }
       ];
       localStorage.setItem(this.LS_ENTRIES, JSON.stringify(initialEntries));
