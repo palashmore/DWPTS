@@ -6,7 +6,6 @@ using DWPTS.Shared.Models;
 
 namespace DWPTS.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/categories")]
 public class CategoriesController : ControllerBase
@@ -25,7 +24,7 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<ApiResponse<CategoryDto>>> Create([FromBody] CreateCategoryDto request)
     {
@@ -33,7 +32,7 @@ public class CategoriesController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<CategoryDto>>> Update(int id, [FromBody] CreateCategoryDto request)
     {
@@ -50,7 +49,6 @@ public class CategoriesController : ControllerBase
     }
 }
 
-[Authorize]
 [ApiController]
 [Route("api/meetings")]
 public class MeetingsController : ControllerBase
@@ -76,7 +74,7 @@ public class MeetingsController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<ApiResponse<MeetingDto>>> Create([FromBody] MeetingDto request)
     {
@@ -84,7 +82,7 @@ public class MeetingsController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<MeetingDto>>> Update(int id, [FromBody] MeetingDto request)
     {
@@ -115,7 +113,6 @@ public class CalendarController : ControllerBase
     }
 }
 
-[Authorize]
 [ApiController]
 [Route("api/holidays")]
 public class HolidaysController : ControllerBase
@@ -152,7 +149,6 @@ public class HolidaysController : ControllerBase
     }
 }
 
-[Authorize]
 [ApiController]
 [Route("api/leaves")]
 public class LeavesController : ControllerBase
@@ -178,7 +174,7 @@ public class LeavesController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(Roles = "ADMIN,MANAGER")]
+    [Authorize]
     [HttpPut("{id}/status")]
     public async Task<ActionResult<ApiResponse<LeaveDto>>> UpdateStatus(int id, [FromBody] UpdateLeaveStatusDto request)
     {
