@@ -328,6 +328,20 @@ interface RequestLog {
     .toast-text { font-size: 12.5px; color: var(--text-platinum); }
 
     @keyframes slideInToast { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (max-width: 1024px) {
+      .topology-grid { grid-template-columns: 1fr; }
+      .telemetry-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .page-title-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .telemetry-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    }
+
+    @media (max-width: 480px) {
+      .telemetry-grid { grid-template-columns: 1fr; }
+    }
   `]
 })
 export class MonitoringComponent implements OnInit, OnDestroy {

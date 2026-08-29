@@ -10,8 +10,11 @@ import { ThemeService, ThemeOption } from './core/services/theme.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="app-container">
+      <!-- Mobile Backdrop Overlay -->
+      <div class="mobile-sidebar-backdrop" *ngIf="isMobileDrawerOpen" (click)="closeMobileDrawer()"></div>
+
       <!-- Luxury Sidebar -->
-      <aside class="sidebar" [class.collapsed]="isSidebarCollapsed" *ngIf="isWorkspaceRoute()">
+      <aside class="sidebar" [class.collapsed]="isSidebarCollapsed" [class.mobile-open]="isMobileDrawerOpen" *ngIf="isWorkspaceRoute()">
         <div class="sidebar-header">
           <div class="logo-box">
             <span class="logo-sparkle">⚡</span>
@@ -24,60 +27,60 @@ import { ThemeService, ThemeOption } from './core/services/theme.service';
 
         <nav class="sidebar-nav">
           <div class="nav-section-title" *ngIf="!isSidebarCollapsed">PLANNING</div>
-          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" title="Dashboard">
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Dashboard">
             <span class="nav-icon">📊</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Dashboard</span>
           </a>
-          <a routerLink="/daily-work" routerLinkActive="active" class="nav-item" title="Daily Work">
+          <a routerLink="/daily-work" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Daily Work">
             <span class="nav-icon">⚡</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Daily Work</span>
           </a>
-          <a routerLink="/work-entries" routerLinkActive="active" class="nav-item" title="All Work Entries">
+          <a routerLink="/work-entries" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="All Work Entries">
             <span class="nav-icon">📋</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">All Entries</span>
           </a>
-          <a routerLink="/work-items" routerLinkActive="active" class="nav-item" title="Work Items Backlog">
+          <a routerLink="/work-items" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Work Items Backlog">
             <span class="nav-icon">🎯</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Work Items</span>
           </a>
-          <a routerLink="/calendar" routerLinkActive="active" class="nav-item" title="Monthly Calendar">
+          <a routerLink="/calendar" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Monthly Calendar">
             <span class="nav-icon">📅</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Calendar</span>
           </a>
-          <a routerLink="/reports" routerLinkActive="active" class="nav-item" title="Executive Reports">
+          <a routerLink="/reports" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Executive Reports">
             <span class="nav-icon">📑</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Reports & Matrix</span>
           </a>
 
           <div class="nav-section-title" *ngIf="!isSidebarCollapsed">MASTER DATA</div>
-          <a routerLink="/meetings" routerLinkActive="active" class="nav-item" title="Meetings">
+          <a routerLink="/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Meetings">
             <span class="nav-icon">👥</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Meetings</span>
           </a>
-          <a routerLink="/categories" routerLinkActive="active" class="nav-item" title="Categories">
+          <a routerLink="/categories" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Categories">
             <span class="nav-icon">🏷️</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Categories</span>
           </a>
-          <a routerLink="/holidays" routerLinkActive="active" class="nav-item" title="Holidays">
+          <a routerLink="/holidays" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Holidays">
             <span class="nav-icon">🎉</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Holidays</span>
           </a>
-          <a routerLink="/leaves" routerLinkActive="active" class="nav-item" title="Leaves">
+          <a routerLink="/leaves" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Leaves">
             <span class="nav-icon">🏖️</span>
             <span class="nav-label" *ngIf="!isSidebarCollapsed">Leaves</span>
           </a>
 
           <div class="system-nav-group" *ngIf="isAdmin()">
             <div class="nav-section-title" *ngIf="!isSidebarCollapsed">SYSTEM (ADMIN ONLY)</div>
-            <a routerLink="/import" routerLinkActive="active" class="nav-item" title="Excel Import">
+            <a routerLink="/import" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Excel Import">
               <span class="nav-icon">📥</span>
               <span class="nav-label" *ngIf="!isSidebarCollapsed">Excel Importer</span>
             </a>
-            <a routerLink="/admin" routerLinkActive="active" class="nav-item" title="Administration">
+            <a routerLink="/admin" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="Administration">
               <span class="nav-icon">⚙️</span>
               <span class="nav-label" *ngIf="!isSidebarCollapsed">Administration</span>
             </a>
-            <a routerLink="/monitoring" routerLinkActive="active" class="nav-item" title="API Monitoring & Observability">
+            <a routerLink="/monitoring" routerLinkActive="active" class="nav-item" (click)="closeMobileDrawer()" title="API Monitoring & Observability">
               <span class="nav-icon">📡</span>
               <span class="nav-label" *ngIf="!isSidebarCollapsed">API Monitoring</span>
             </a>
@@ -102,7 +105,7 @@ import { ThemeService, ThemeOption } from './core/services/theme.service';
       <div class="main-wrapper">
         <header class="top-navbar" *ngIf="isWorkspaceRoute()">
           <div class="left-nav-group">
-            <button class="toggle-sidebar-btn" (click)="isSidebarCollapsed = !isSidebarCollapsed" title="Toggle Navigation">
+            <button class="toggle-sidebar-btn" (click)="toggleSidebar()" title="Toggle Navigation">
               <span class="icon-bar">☰</span>
             </button>
             <div class="breadcrumb-container">
@@ -526,11 +529,96 @@ import { ThemeService, ThemeOption } from './core/services/theme.service';
 
     .theme-modal-footer { display: flex; justify-content: flex-end; }
 
+
+    /* Mobile Off-Canvas Drawer & Responsive Layout */
+    .mobile-sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 998;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @media (max-width: 1024px) {
+      .mobile-sidebar-backdrop {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: 100vh !important;
+        width: 280px !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 999 !important;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0) !important;
+      }
+
+      .sidebar.collapsed {
+        width: 280px !important;
+        transform: translateX(-100%);
+      }
+
+      .sidebar.collapsed.mobile-open {
+        transform: translateX(0) !important;
+      }
+
+      .top-navbar {
+        padding: 0 14px !important;
+      }
+
+      .breadcrumb-system, .breadcrumb-separator {
+        display: none !important;
+      }
+
+      .page-content {
+        padding: 16px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .top-navbar {
+        height: 56px !important;
+      }
+
+      .breadcrumb-container {
+        font-size: 12px !important;
+      }
+
+      .theme-switcher-pill span:not(.theme-swatch) {
+        display: none;
+      }
+      .theme-switcher-pill {
+        padding: 6px 10px !important;
+      }
+
+      .live-status-pill {
+        display: none !important;
+      }
+
+      .signout-button span:not(.signout-icon) {
+        display: none;
+      }
+      .signout-button {
+        padding: 6px 10px !important;
+      }
+    }
+
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
   `]
 })
 export class AppComponent implements OnInit {
   isSidebarCollapsed = false;
+  isMobileDrawerOpen = false;
   showThemeModal = false;
   currentUser: any = null;
 
@@ -563,6 +651,20 @@ export class AppComponent implements OnInit {
 
   isWorkspaceRoute(): boolean {
     return !this.router.url.includes('/login');
+  }
+
+  toggleSidebar() {
+    if (window.innerWidth <= 1024) {
+      this.isMobileDrawerOpen = !this.isMobileDrawerOpen;
+    } else {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    }
+  }
+
+  closeMobileDrawer() {
+    if (window.innerWidth <= 1024) {
+      this.isMobileDrawerOpen = false;
+    }
   }
 
   openThemeModal() {

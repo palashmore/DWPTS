@@ -163,6 +163,23 @@ import { CalendarMonth, CalendarDay } from '../../core/models/models';
     .weekend-text { font-size: 11px; color: var(--text-muted); font-style: italic; }
 
     .cell-footer { display: flex; justify-content: flex-start; }
+
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .page-title-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .month-nav { width: 100%; justify-content: space-between; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .calendar-grid-container { padding: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .calendar-header-grid, .calendar-days-grid { min-width: 600px; }
+    }
+
+    @media (max-width: 480px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .month-title { min-width: 110px; font-size: 14px; }
+    }
   `]
 })
 export class CalendarComponent implements OnInit {

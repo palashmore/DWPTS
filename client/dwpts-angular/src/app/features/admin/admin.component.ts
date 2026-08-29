@@ -320,6 +320,14 @@ import { ApiService } from '../../core/services/api.service';
 
     @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
     @keyframes slideInToast { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (max-width: 768px) {
+      .page-title-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .form-row-2 { grid-template-columns: 1fr; gap: 8px; }
+      .modal-dialog { width: 94vw; max-width: 94vw; padding: 18px; max-height: 90vh; overflow-y: auto; }
+      .modal-footer-actions { flex-direction: column-reverse; gap: 8px; }
+      .modal-footer-actions button { width: 100%; }
+    }
   `]
 })
 export class AdminComponent implements OnInit {

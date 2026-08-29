@@ -961,6 +961,25 @@ import { DailyWorkScreen, WorkEntry, Category, Meeting } from '../../core/models
       .dashboard-split-layout { grid-template-columns: 1fr; }
       .kpi-hero-container { grid-template-columns: repeat(2, 1fr); }
     }
+
+    @media (max-width: 768px) {
+      .page-header-flex { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .date-hero-card { flex-direction: column; gap: 12px; padding: 14px; }
+      .date-navigator-pill { width: 100%; justify-content: space-between; }
+      .hero-actions-group { width: 100%; flex-direction: column; }
+      .hero-actions-group button { width: 100%; }
+      .form-row-2 { grid-template-columns: 1fr; gap: 10px; }
+      .calc-inputs-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .modal-dialog { width: 94vw; max-width: 94vw; padding: 18px; max-height: 90vh; overflow-y: auto; }
+      .modal-footer-actions { flex-direction: column-reverse; gap: 8px; }
+      .modal-footer-actions button { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .kpi-hero-container { grid-template-columns: 1fr; gap: 10px; }
+      .calc-inputs-grid { grid-template-columns: 1fr; }
+      .calc-total-group { margin-top: 6px; }
+    }
   `]
 })
 export class DailyWorkComponent implements OnInit {

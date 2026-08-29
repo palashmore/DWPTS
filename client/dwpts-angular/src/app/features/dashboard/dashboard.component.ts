@@ -240,6 +240,17 @@ import { DashboardSummary } from '../../core/models/models';
       .kpi-grid-5 { grid-template-columns: repeat(2, 1fr); }
       .analytics-grid { grid-template-columns: 1fr; }
     }
+
+    @media (max-width: 768px) {
+      .page-title-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .trend-bars { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+      .bar-col { min-width: 36px; }
+    }
+
+    @media (max-width: 480px) {
+      .kpi-grid-5 { grid-template-columns: 1fr; }
+      .bar-legend { flex-wrap: wrap; gap: 8px; }
+    }
   `]
 })
 export class DashboardComponent implements OnInit {
