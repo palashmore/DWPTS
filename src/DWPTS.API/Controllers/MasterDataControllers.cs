@@ -89,6 +89,14 @@ public class MeetingsController : ControllerBase
         var result = await _meetingService.UpdateMeetingAsync(id, request);
         return Ok(result);
     }
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<ApiResponse>> Delete(int id)
+    {
+        var result = await _meetingService.DeleteMeetingAsync(id);
+        return Ok(result);
+    }
 }
 
 [Authorize]
