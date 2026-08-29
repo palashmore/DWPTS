@@ -15,3 +15,7 @@ dist/
 *.db-wal
 logs/
 *.log
+
+# Local Private Reference Files (Never Commit)
+TECHNICAL_REFERENCE.md
+*.local.md

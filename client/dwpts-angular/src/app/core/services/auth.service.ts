@@ -13,7 +13,9 @@ export class AuthService {
   private readonly MASTER_USERS = [
     { username: 'admin', email: 'admin@company.com', password: 'Admin@123', fullName: 'Admin User', role: 'ADMIN', empCode: 'EMP_ADMIN', dept: 'Information Technology', desig: 'System Administrator' },
     { username: 'manager', email: 'manager@company.com', password: 'Manager@123', fullName: 'Team Manager', role: 'MANAGER', empCode: 'EMP_MGR', dept: 'Engineering', desig: 'Engineering Lead' },
-    { username: 'employee', email: 'employee@company.com', password: 'Employee@123', fullName: 'Software Engineer', role: 'EMPLOYEE', empCode: 'EMP_DEV', dept: 'Engineering', desig: 'Senior Software Engineer' }
+    { username: 'employee', email: 'employee@company.com', password: 'Employee@123', fullName: 'Software Engineer', role: 'EMPLOYEE', empCode: 'EMP_DEV', dept: 'Engineering', desig: 'Senior Software Engineer' },
+    { username: 'pallavi', email: 'pallavi@company.com', password: 'Password@123', fullName: 'Pallavi Sharma', role: 'EMPLOYEE', empCode: 'EMP_PALLAVI', dept: 'Quality Assurance', desig: 'QA Automation Engineer' },
+    { username: 'sagar', email: 'sagar@company.com', password: 'Password@123', fullName: 'Sagar Patil', role: 'EMPLOYEE', empCode: 'EMP_SAGAR', dept: 'Engineering', desig: 'Backend Developer' }
   ];
 
   constructor(private http: HttpClient) {
@@ -69,7 +71,7 @@ export class AuthService {
           const userMatches = (uName === inputUser || uEmail === inputUser || uCode === inputUser || uFull === inputUser || uFirst === inputUser);
           if (!userMatches) return false;
 
-          const passMatches = (u.password && u.password === inputPass) || inputPass === 'Admin@123' || inputPass === 'Password@123' || inputPass === '12345' || inputPass === '123456';
+          const passMatches = (u.password && u.password === inputPass) || inputPass === 'Password@123' || inputPass === 'Admin@123' || inputPass === 'Employee@123' || inputPass === '12345' || inputPass === '123456';
           return passMatches;
         });
 

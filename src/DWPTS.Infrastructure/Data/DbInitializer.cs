@@ -210,6 +210,62 @@ public static class DbInitializer
 
             await context.UserRoles.AddAsync(new UserRole { UserId = devUser.UserId, RoleId = employeeRole.RoleId });
 
+            // Seed Pallavi Employee & User
+            var pallaviEmp = new Employee
+            {
+                EmployeeCode = "EMP_PALLAVI",
+                FirstName = "Pallavi",
+                LastName = "Sharma",
+                Email = "pallavi@dwpts.local",
+                Department = "Quality Assurance",
+                Designation = "QA Automation Engineer",
+                ManagerId = managerEmp.EmployeeId,
+                DailyCapacityHours = 8.0m,
+                IsActive = true
+            };
+            await context.Employees.AddAsync(pallaviEmp);
+            await context.SaveChangesAsync();
+
+            var pallaviUser = new User
+            {
+                Username = "pallavi",
+                Email = "pallavi@dwpts.local",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password@123"),
+                IsActive = true,
+                EmployeeId = pallaviEmp.EmployeeId
+            };
+            await context.Users.AddAsync(pallaviUser);
+            await context.SaveChangesAsync();
+            await context.UserRoles.AddAsync(new UserRole { UserId = pallaviUser.UserId, RoleId = employeeRole.RoleId });
+
+            // Seed Sagar Employee & User
+            var sagarEmp = new Employee
+            {
+                EmployeeCode = "EMP_SAGAR",
+                FirstName = "Sagar",
+                LastName = "Patil",
+                Email = "sagar@dwpts.local",
+                Department = "Engineering",
+                Designation = "Backend Developer",
+                ManagerId = managerEmp.EmployeeId,
+                DailyCapacityHours = 8.0m,
+                IsActive = true
+            };
+            await context.Employees.AddAsync(sagarEmp);
+            await context.SaveChangesAsync();
+
+            var sagarUser = new User
+            {
+                Username = "sagar",
+                Email = "sagar@dwpts.local",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password@123"),
+                IsActive = true,
+                EmployeeId = sagarEmp.EmployeeId
+            };
+            await context.Users.AddAsync(sagarUser);
+            await context.SaveChangesAsync();
+            await context.UserRoles.AddAsync(new UserRole { UserId = sagarUser.UserId, RoleId = employeeRole.RoleId });
+
             await context.SaveChangesAsync();
         }
     }
