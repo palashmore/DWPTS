@@ -1,3 +1,4 @@
+import { SignalRService } from '../../core/services/signalr.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -1029,7 +1030,7 @@ export class DailyWorkComponent implements OnInit {
     remarks: ''
   };
 
-  constructor(private api: ApiService, private route: ActivatedRoute) {
+  constructor(private api: ApiService, private route: ActivatedRoute, private signalR: SignalRService) {
     this.categories = [...this.DEFAULT_CATEGORIES];
   }
 
@@ -1051,6 +1052,10 @@ export class DailyWorkComponent implements OnInit {
       if (res.success && res.data) {
         this.meetings = res.data;
       }
+    });
+
+    this.signalR.workEntryChanged$.subscribe(() => {
+      this.loadData();
     });
   }
 

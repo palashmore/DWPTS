@@ -1,3 +1,4 @@
+import { SignalRService } from '../../core/services/signalr.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -197,10 +198,13 @@ export class CalendarComponent implements OnInit {
   holidaysCount = 1;
   leaveDaysCount = 0;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router, private signalR: SignalRService) {}
 
   ngOnInit() {
     this.generateCalendarDays();
+    this.signalR.workEntryChanged$.subscribe(() => {
+      this.generateCalendarDays();
+    });
   }
 
   generateCalendarDays() {

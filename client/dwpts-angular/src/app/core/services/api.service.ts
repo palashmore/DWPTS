@@ -311,29 +311,50 @@ export class ApiService {
 
   // Categories & Meetings
   getCategories(): Observable<ApiResponse<Category[]>> {
-    const cats = JSON.parse(localStorage.getItem(this.LS_CATEGORIES) || '[]');
-    return of({ success: true, message: 'OK', data: cats });
+    const localCats = JSON.parse(localStorage.getItem(this.LS_CATEGORIES) || '[]');
+    return this.http.get<ApiResponse<Category[]>>(`${this.baseUrl}/categories`).pipe(
+      tap(res => {
+        if (res.success && res.data) {
+          localStorage.setItem(this.LS_CATEGORIES, JSON.stringify(res.data));
+        }
+      }),
+      catchError(() => of({ success: true, message: 'OK', data: localCats }))
+    );
   }
 
   createCategory(cat: any): Observable<ApiResponse<Category>> {
-    const cats: Category[] = JSON.parse(localStorage.getItem(this.LS_CATEGORIES) || '[]');
-    const newCat: Category = { categoryId: Date.now(), name: cat.name, colorCode: cat.colorCode || '#60A5FA', isActive: true, totalEntriesCount: 0, totalEffortHours: 0 };
-    cats.push(newCat);
-    localStorage.setItem(this.LS_CATEGORIES, JSON.stringify(cats));
-    return of({ success: true, message: 'Category created', data: newCat });
+    const localCats: Category[] = JSON.parse(localStorage.getItem(this.LS_CATEGORIES) || '[]');
+    return this.http.post<ApiResponse<Category>>(`${this.baseUrl}/categories`, cat).pipe(
+      tap(res => {
+        if (res.success && res.data) {
+          localCats.push(res.data);
+          localStorage.setItem(this.LS_CATEGORIES, JSON.stringify(localCats));
+        }
+      }),
+      catchError(() => {
+        const newCat: Category = { categoryId: Date.now(), name: cat.name, colorCode: cat.colorCode || '#60A5FA', isActive: true, totalEntriesCount: 0, totalEffortHours: 0 };
+        localCats.push(newCat);
+        localStorage.setItem(this.LS_CATEGORIES, JSON.stringify(localCats));
+        return of({ success: true, message: 'Category created in device cache', data: newCat });
+      })
+    );
   }
 
   getMeetings(): Observable<ApiResponse<Meeting[]>> {
-    const meets: Meeting[] = [
+    const defaultMeets: Meeting[] = [
       { meetingId: 1, meetingName: 'Daily Standup', defaultDurationHours: 0.5, isActive: true },
       { meetingId: 2, meetingName: 'Sprint Planning', defaultDurationHours: 2.0, isActive: true },
       { meetingId: 3, meetingName: 'Sprint Retrospective', defaultDurationHours: 1.0, isActive: true }
     ];
-    return of({ success: true, message: 'OK', data: meets });
+    return this.http.get<ApiResponse<Meeting[]>>(`${this.baseUrl}/meetings`).pipe(
+      catchError(() => of({ success: true, message: 'OK', data: defaultMeets }))
+    );
   }
 
   getMeetingAnalysis(fromDate?: string, toDate?: string): Observable<ApiResponse<MeetingAnalysis[]>> {
-    return of({ success: true, message: 'OK', data: [] });
+    return this.http.get<ApiResponse<MeetingAnalysis[]>>(`${this.baseUrl}/meetings/analysis`).pipe(
+      catchError(() => of({ success: true, message: 'OK', data: [] }))
+    );
   }
 
   // Work Items Backlog

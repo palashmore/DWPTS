@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using DWPTS.API.Hubs;
 using DWPTS.Application.DTOs;
 using DWPTS.Application.Interfaces;
 using DWPTS.Shared.Models;
@@ -12,10 +14,12 @@ namespace DWPTS.API.Controllers;
 public class WorkEntriesController : ControllerBase
 {
     private readonly IWorkEntryService _workEntryService;
+    private readonly IHubContext<WorkNotificationHub> _hubContext;
 
-    public WorkEntriesController(IWorkEntryService workEntryService)
+    public WorkEntriesController(IWorkEntryService workEntryService, IHubContext<WorkNotificationHub> hubContext)
     {
         _workEntryService = workEntryService;
+        _hubContext = hubContext;
     }
 
     [HttpGet("daily")]
@@ -45,6 +49,10 @@ public class WorkEntriesController : ControllerBase
     public async Task<ActionResult<ApiResponse<WorkEntryDto>>> CreateWorkEntry([FromBody] CreateWorkEntryDto request)
     {
         var result = await _workEntryService.CreateWorkEntryAsync(request);
+        if (result.Success)
+        {
+            await _hubContext.Clients.All.SendAsync("WorkEntryChanged", result.Data);
+        }
         return Ok(result);
     }
 
@@ -52,6 +60,10 @@ public class WorkEntriesController : ControllerBase
     public async Task<ActionResult<ApiResponse<WorkEntryDto>>> UpdateWorkEntry(int id, [FromBody] UpdateWorkEntryDto request)
     {
         var result = await _workEntryService.UpdateWorkEntryAsync(id, request);
+        if (result.Success)
+        {
+            await _hubContext.Clients.All.SendAsync("WorkEntryChanged", result.Data);
+        }
         if (!result.Success) return NotFound(result);
         return Ok(result);
     }
@@ -60,6 +72,10 @@ public class WorkEntriesController : ControllerBase
     public async Task<ActionResult<ApiResponse>> DeleteWorkEntry(int id)
     {
         var result = await _workEntryService.DeleteWorkEntryAsync(id);
+        if (result.Success)
+        {
+            await _hubContext.Clients.All.SendAsync("WorkEntryChanged", new { WorkEntryId = id, Deleted = true });
+        }
         if (!result.Success) return NotFound(result);
         return Ok(result);
     }
@@ -68,6 +84,10 @@ public class WorkEntriesController : ControllerBase
     public async Task<ActionResult<ApiResponse<List<WorkEntryDto>>>> CopyEntries([FromBody] CopyWorkEntriesRequestDto request)
     {
         var result = await _workEntryService.CopyEntriesAsync(request);
+        if (result.Success)
+        {
+            await _hubContext.Clients.All.SendAsync("WorkEntryChanged", result.Data);
+        }
         return Ok(result);
     }
 

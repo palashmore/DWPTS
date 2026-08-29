@@ -1,3 +1,4 @@
+import { SignalRService } from '../../core/services/signalr.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -314,7 +315,7 @@ export class DashboardComponent implements OnInit {
     }
   };
 
-  constructor(private api: ApiService, public auth: AuthService) {}
+  constructor(private api: ApiService, public auth: AuthService, private signalR: SignalRService) {}
 
   ngOnInit() {
     this.api.getDashboard().subscribe(res => {
