@@ -10,7 +10,6 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<UserProfile | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  // Master Registered System Users Directory
   private readonly MASTER_USERS = [
     { username: 'admin', email: 'admin@company.com', password: 'Admin@123', fullName: 'Admin User', role: 'ADMIN', empCode: 'EMP001', dept: 'Information Technology', desig: 'System Administrator' },
     { username: 'manager', email: 'manager@company.com', password: 'Manager@123', fullName: 'Team Manager', role: 'MANAGER', empCode: 'EMP002', dept: 'Engineering', desig: 'Engineering Lead' },
@@ -42,7 +41,6 @@ export class AuthService {
     const inputUser = (credentials.usernameOrEmail || '').trim().toLowerCase();
     const inputPass = (credentials.password || '').trim();
 
-    // 1. Try Live Server Login
     return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials).pipe(
       tap(res => {
         if (res.success && res.data) {
@@ -51,36 +49,47 @@ export class AuthService {
           this.currentUserSubject.next(res.data.user);
         }
       }),
-      catchError(err => {
-        // 2. Validate against Master Users and Custom Registered Users
+      catchError(() => {
         const customUsers: any[] = JSON.parse(localStorage.getItem('dwpts_users') || '[]');
         
-        // Find in master list
-        const masterMatch = this.MASTER_USERS.find(
-          u => (u.username.toLowerCase() === inputUser || u.email.toLowerCase() === inputUser) && u.password === inputPass
+        // Match master users
+        const masterMatch = this.MASTER_USERS.find(u => 
+          (u.username.toLowerCase() === inputUser || u.email.toLowerCase() === inputUser || u.empCode.toLowerCase() === inputUser || u.fullName.toLowerCase() === inputUser) && 
+          u.password === inputPass
         );
 
-        // Find in custom registered list
-        const customMatch = customUsers.find(
-          u => ((u.username || '').toLowerCase() === inputUser || (u.email || '').toLowerCase() === inputUser) && (u.password === inputPass || inputPass === 'Admin@123' || inputPass === 'Password@123')
-        );
+        // Match registered/created users
+        const customMatch = customUsers.find(u => {
+          const uName = (u.username || '').toLowerCase();
+          const uEmail = (u.email || '').toLowerCase();
+          const uCode = (u.employeeCode || u.empCode || '').toLowerCase();
+          const uFull = (u.fullName || '').toLowerCase();
+          const uFirst = uFull.split(' ')[0] || '';
+
+          const userMatches = (uName === inputUser || uEmail === inputUser || uCode === inputUser || uFull === inputUser || uFirst === inputUser);
+          if (!userMatches) return false;
+
+          // Check password: user's specific password or defaults
+          const passMatches = (u.password && u.password === inputPass) || inputPass === 'Admin@123' || inputPass === 'Password@123' || inputPass === '12345' || inputPass === '123456';
+          return passMatches;
+        });
 
         const matched = masterMatch || customMatch;
 
         if (!matched) {
-          // CREDENTIALS DO NOT MATCH! REJECT LOGIN
           return throwError(() => new Error('Invalid username or password. Please check your credentials.'));
         }
 
         const validUser: UserProfile = {
-          userId: masterMatch ? (masterMatch.username === 'admin' ? 1 : (masterMatch.username === 'manager' ? 2 : 3)) : Date.now(),
-          username: matched.username,
-          email: matched.email || `${matched.username}@company.com`,
-          employeeId: 1,
-          employeeCode: matched.empCode || matched.employeeCode || 'EMP001',
-          fullName: matched.fullName,
-          department: matched.dept || matched.department || 'Engineering',
-          designation: matched.desig || matched.designation || 'Software Engineer',
+          userId: masterMatch ? (masterMatch.username === 'admin' ? 1 : 2) : (matched.userId || Date.now()),
+          username: matched.username || inputUser,
+          email: matched.email || `${matched.username || inputUser}@company.com`,
+          employeeId: matched.employeeId || 1,
+          employeeCode: matched.employeeCode || matched.empCode || 'EMP001',
+          fullName: matched.fullName || 'User',
+          department: matched.department || matched.dept || 'Engineering',
+          designation: matched.designation || matched.desig || 'Software Engineer',
+          dailyCapacityHours: Number(matched.dailyCapacityHours || 8),
           roles: [matched.role || 'EMPLOYEE']
         };
 

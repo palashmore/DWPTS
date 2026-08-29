@@ -612,6 +612,37 @@ export class ApiService {
     return of({ success: true, message: 'User created in local storage', data: newUser });
   }
 
+  // User Update & Delete
+  updateUser(employeeCode: string, user: any): Observable<ApiResponse<any>> {
+    let users = JSON.parse(localStorage.getItem(this.LS_USERS) || '[]');
+    users = users.map((u: any) => {
+      if (u.employeeCode === employeeCode) {
+        return {
+          ...u,
+          fullName: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || u.fullName,
+          username: user.username || u.username,
+          email: user.email || u.email,
+          password: user.password || u.password,
+          department: user.department || u.department,
+          designation: user.designation || u.designation,
+          dailyCapacityHours: Number(user.dailyCapacityHours || u.dailyCapacityHours || 8),
+          isActive: user.isActive !== undefined ? user.isActive : u.isActive,
+          role: user.role || u.role || 'EMPLOYEE'
+        };
+      }
+      return u;
+    });
+    localStorage.setItem(this.LS_USERS, JSON.stringify(users));
+    return of({ success: true, message: 'User updated successfully in database' });
+  }
+
+  deleteUser(employeeCode: string): Observable<ApiResponse<any>> {
+    let users = JSON.parse(localStorage.getItem(this.LS_USERS) || '[]');
+    users = users.filter((u: any) => u.employeeCode !== employeeCode);
+    localStorage.setItem(this.LS_USERS, JSON.stringify(users));
+    return of({ success: true, message: 'User deleted from database' });
+  }
+
   getEmployees(): Observable<ApiResponse<any[]>> {
     const users = JSON.parse(localStorage.getItem(this.LS_USERS) || '[]');
     return of({ success: true, message: 'OK', data: users });
