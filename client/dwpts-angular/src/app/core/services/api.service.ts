@@ -449,7 +449,7 @@ export class ApiService {
     return this.http.post<ApiResponse<Meeting>>(`${this.baseUrl}/meetings`, meeting).pipe(
       tap(res => {
         if (res.success && res.data) {
-          const updated = [...localMeets.filter(m => m.meetingId !== res.data.meetingId), res.data];
+          const updated = [...localMeets.filter(m => m.meetingId !== res.data!.meetingId), res.data];
           localStorage.setItem(this.LS_MEETINGS, JSON.stringify(updated));
         }
       }),
