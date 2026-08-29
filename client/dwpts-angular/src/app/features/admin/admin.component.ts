@@ -376,6 +376,14 @@ export class AdminComponent implements OnInit {
     this.toastTimer = setTimeout(() => this.toastMessage = null, 4000);
   }
 
+  resetAllData() {
+    if (confirm('Are you sure you want to clear all old work entries and custom users? You can create fresh ones immediately.')) {
+      this.api.clearAllRecords();
+      this.loadData();
+      this.showToast('All old records and tasks cleared successfully. Ready for fresh entries!', 'success');
+    }
+  }
+
   openUserModal() {
     this.editingEmpCode = null;
     this.userForm = {

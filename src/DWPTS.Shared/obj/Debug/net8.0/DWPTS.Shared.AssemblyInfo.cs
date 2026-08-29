@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DWPTS.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e9547cc93330c8eae7e55b063232c3d1c57727c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+062d2da8c4dd85e46f645830f6939f47164eb6b0")]
 [assembly: System.Reflection.AssemblyProductAttribute("DWPTS.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DWPTS.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
