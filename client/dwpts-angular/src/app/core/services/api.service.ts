@@ -79,9 +79,15 @@ export class ApiService {
       localStorage.setItem(this.LS_ENTRIES, JSON.stringify([]));
     }
 
-    if (!localStorage.getItem(this.LS_USERS)) {
+    if (!localStorage.getItem(this.LS_USERS) || JSON.parse(localStorage.getItem(this.LS_USERS) || '[]').length < 5) {
       const defUsers = [
-        { employeeCode: 'EMP001', fullName: 'Admin User', username: 'admin', email: 'admin@company.com', password: 'Admin@123', department: 'Information Technology', designation: 'System Administrator', dailyCapacityHours: 8, isActive: true, role: 'ADMIN' }
+        { employeeCode: 'EMP001', fullName: 'Admin User', username: 'admin', email: 'admin@company.com', password: 'Admin@123', department: 'Engineering', designation: 'Lead Architect', dailyCapacityHours: 8, isActive: true, role: 'ADMIN' },
+        { employeeCode: 'EMP002', fullName: 'Manager User', username: 'manager', email: 'manager@company.com', password: 'Manager@123', department: 'Management', designation: 'Engineering Manager', dailyCapacityHours: 8, isActive: true, role: 'MANAGER' },
+        { employeeCode: 'EMP003', fullName: 'Employee User', username: 'employee', email: 'employee@company.com', password: 'Employee@123', department: 'Engineering', designation: 'Senior Developer', dailyCapacityHours: 8, isActive: true, role: 'EMPLOYEE' },
+        { employeeCode: 'EMP004', fullName: 'palash Admin', username: 'palashadmin', email: 'palashm@gmail.com', password: 'Password@123', department: 'Engineering', designation: 'Software Engineer', dailyCapacityHours: 8, isActive: true, role: 'ADMIN' },
+        { employeeCode: 'EMP005', fullName: 'palash more', username: 'palashm', email: 'palash123more@gmail.com', password: 'Password@123', department: 'Engineering', designation: 'Software Engineer', dailyCapacityHours: 8, isActive: true, role: 'EMPLOYEE' },
+        { employeeCode: 'EMP_PALLAVI', fullName: 'Pallavi Sharma', username: 'pallavi', email: 'pallavi@company.com', password: 'Password@123', department: 'Quality Assurance', designation: 'QA Automation Engineer', dailyCapacityHours: 8, isActive: true, role: 'EMPLOYEE' },
+        { employeeCode: 'EMP_SAGAR', fullName: 'Sagar Patil', username: 'sagar', email: 'sagar@company.com', password: 'Password@123', department: 'Engineering', designation: 'Backend Developer', dailyCapacityHours: 8, isActive: true, role: 'EMPLOYEE' }
       ];
       localStorage.setItem(this.LS_USERS, JSON.stringify(defUsers));
     }
