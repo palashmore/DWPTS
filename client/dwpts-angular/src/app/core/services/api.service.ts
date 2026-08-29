@@ -72,6 +72,54 @@ export class ApiService {
       localStorage.setItem(this.LS_CATEGORIES, JSON.stringify(defCats));
     }
 
+    // Pre-populate standard sample entries for users if storage is fresh
+    if (!localStorage.getItem(this.LS_ENTRIES)) {
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const initialEntries: WorkEntry[] = [
+        {
+          workEntryId: 101,
+          employeeId: 4,
+          employeeCode: 'EMP_PALLAVI',
+          employeeName: 'Pallavi Sharma',
+          username: 'pallavi',
+          workDate: todayStr,
+          taskNumber: '#QA-102',
+          description: 'Automated Regression Testing on Work Entries & Capacity API',
+          categoryId: 7,
+          categoryName: 'Testing',
+          categoryColor: '#4ADE80',
+          plannedEffortHours: 7.0,
+          meetingEffortHours: 1.0,
+          workEffortHours: 6.0,
+          totalEffortHours: 7.0,
+          varianceHours: 0,
+          status: 'In Progress',
+          remarks: 'Automated test suite validation'
+        },
+        {
+          workEntryId: 102,
+          employeeId: 5,
+          employeeCode: 'EMP_SAGAR',
+          employeeName: 'Sagar Patil',
+          username: 'sagar',
+          workDate: todayStr,
+          taskNumber: '#DEV-304',
+          description: 'PostgreSQL Migration & Redis Distributed Cache Optimization',
+          categoryId: 1,
+          categoryName: 'Development',
+          categoryColor: '#60A5FA',
+          plannedEffortHours: 8.0,
+          meetingEffortHours: 0.5,
+          workEffortHours: 7.5,
+          totalEffortHours: 8.0,
+          varianceHours: 0,
+          status: 'In Progress',
+          remarks: 'Core backend development sprint'
+        }
+      ];
+      localStorage.setItem(this.LS_ENTRIES, JSON.stringify(initialEntries));
+    }
+
     if (!localStorage.getItem(this.LS_USERS)) {
       const defUsers = [
         { employeeCode: 'EMP001', fullName: 'Admin User', username: 'admin', email: 'admin@company.com', password: 'Admin@123', department: 'Information Technology', designation: 'System Administrator', dailyCapacityHours: 8, isActive: true, role: 'ADMIN' },
@@ -84,57 +132,63 @@ export class ApiService {
     }
   }
 
-  // Daily Work & Work Entries
+  // Daily Work & Work Entries with Cloud & Multi-Device Sync
   getDailyWork(date: string, selectedEmpCode?: string): Observable<ApiResponse<DailyWorkScreen>> {
     const user = this.getCurrentUser();
     const isAdmin = this.isAdminOrManager();
-
-    const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
     const targetDate = date.substring(0, 10);
-    
-    // Strict isolation: Employees only see their own tasks
-    let dayEntries = allEntries.filter(e => (e.workDate || '').substring(0, 10) === targetDate);
-    if (!isAdmin) {
-      dayEntries = dayEntries.filter(e => this.isEntryOwner(e, user));
-    } else if (selectedEmpCode && selectedEmpCode !== 'ALL') {
-      dayEntries = dayEntries.filter(e => 
-        (e.employeeCode && e.employeeCode.toLowerCase() === selectedEmpCode.toLowerCase()) || 
-        (e.username && e.username.toLowerCase() === selectedEmpCode.toLowerCase())
-      );
-    }
 
-    const totalWork = dayEntries.reduce((sum, e) => sum + (e.workEffortHours || 0), 0);
-    const totalMeeting = dayEntries.reduce((sum, e) => sum + (e.meetingEffortHours || 0), 0);
-    const totalActual = totalWork + totalMeeting;
-    const totalPlanned = dayEntries.reduce((sum, e) => sum + (e.plannedEffortHours || 0), 0);
-    const capacity = user?.dailyCapacityHours || 8.0;
-    const remaining = Math.max(0, capacity - totalActual);
-    const overtime = Math.max(0, totalActual - capacity);
-    const utilization = capacity > 0 ? Math.round((totalActual / capacity) * 100) : 0;
+    const getLocalScreen = (): DailyWorkScreen => {
+      const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+      let dayEntries = allEntries.filter(e => (e.workDate || '').substring(0, 10) === targetDate);
+      if (!isAdmin) {
+        dayEntries = dayEntries.filter(e => this.isEntryOwner(e, user));
+      } else if (selectedEmpCode && selectedEmpCode !== 'ALL') {
+        dayEntries = dayEntries.filter(e => 
+          (e.employeeCode && e.employeeCode.toLowerCase() === selectedEmpCode.toLowerCase()) || 
+          (e.username && e.username.toLowerCase() === selectedEmpCode.toLowerCase())
+        );
+      }
 
-    const d = new Date(date);
-    const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+      const totalWork = dayEntries.reduce((sum, e) => sum + (e.workEffortHours || 0), 0);
+      const totalMeeting = dayEntries.reduce((sum, e) => sum + (e.meetingEffortHours || 0), 0);
+      const totalActual = totalWork + totalMeeting;
+      const totalPlanned = dayEntries.reduce((sum, e) => sum + (e.plannedEffortHours || 0), 0);
+      const capacity = user?.dailyCapacityHours || 8.0;
+      const remaining = Math.max(0, capacity - totalActual);
+      const overtime = Math.max(0, totalActual - capacity);
+      const utilization = capacity > 0 ? Math.round((totalActual / capacity) * 100) : 0;
+      const d = new Date(date);
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
 
-    const mockScreen: DailyWorkScreen = {
-      date: targetDate,
-      dayName: dayName,
-      employeeId: user?.employeeId || 1,
-      employeeName: user?.fullName || 'User',
-      dailyCapacityHours: capacity,
-      totalPlannedHours: totalPlanned,
-      totalMeetingHours: totalMeeting,
-      totalWorkHours: totalWork,
-      totalActualHours: totalActual,
-      remainingCapacityHours: remaining,
-      overtimeHours: overtime,
-      utilizationPercentage: utilization,
-      isOverCapacity: totalActual > capacity,
-      isHoliday: false,
-      isLeave: false,
-      entries: dayEntries
+      return {
+        date: targetDate,
+        dayName: dayName,
+        employeeId: user?.employeeId || 1,
+        employeeName: user?.fullName || (user?.username || 'User'),
+        dailyCapacityHours: capacity,
+        totalPlannedHours: totalPlanned,
+        totalMeetingHours: totalMeeting,
+        totalWorkHours: totalWork,
+        totalActualHours: totalActual,
+        remainingCapacityHours: remaining,
+        overtimeHours: overtime,
+        utilizationPercentage: utilization,
+        isOverCapacity: totalActual > capacity,
+        isHoliday: false,
+        isLeave: false,
+        entries: dayEntries
+      };
     };
 
-    return of({ success: true, message: 'Loaded daily work', data: mockScreen });
+    let params = new HttpParams().set('date', targetDate);
+    if (user?.employeeId) {
+      params = params.set('employeeId', user.employeeId.toString());
+    }
+
+    return this.http.get<ApiResponse<DailyWorkScreen>>(`${this.baseUrl}/work-entries/daily`, { params }).pipe(
+      catchError(() => of({ success: true, message: 'Loaded local sync data', data: getLocalScreen() }))
+    );
   }
 
   getWorkEntries(filter: any): Observable<ApiResponse<PagedResult<WorkEntry>>> {
@@ -195,8 +249,8 @@ export class ApiService {
     const newEntry: WorkEntry = {
       workEntryId: Date.now(),
       employeeId: user?.employeeId || 1,
-      employeeCode: user?.employeeCode || 'EMP_USER',
-      employeeName: user?.fullName || 'User',
+      employeeCode: user?.employeeCode || ('EMP_' + (user?.username || 'USER').toUpperCase()),
+      employeeName: user?.fullName || (user?.username || 'User'),
       username: (user?.username || 'user').toLowerCase(),
       workDate: entry.workDate,
       taskNumber: entry.taskNumber,
@@ -218,7 +272,14 @@ export class ApiService {
 
     entries.unshift(newEntry);
     localStorage.setItem(this.LS_ENTRIES, JSON.stringify(entries));
-    return of({ success: true, message: 'Work entry saved', data: newEntry });
+
+    // Also persist to backend REST API
+    return this.http.post<ApiResponse<WorkEntry>>(`${this.baseUrl}/work-entries`, {
+      ...newEntry,
+      employeeId: user?.employeeId || 1
+    }).pipe(
+      catchError(() => of({ success: true, message: 'Work entry saved to device cache', data: newEntry }))
+    );
   }
 
   updateWorkEntry(id: number, entry: any): Observable<ApiResponse<WorkEntry>> {
