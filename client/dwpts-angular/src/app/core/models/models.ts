@@ -24,6 +24,7 @@ export interface UserProfile {
   fullName?: string;
   department?: string;
   designation?: string;
+  dailyCapacityHours?: number;
   roles: string[];
 }
 
@@ -37,7 +38,9 @@ export interface LoginResponse {
 export interface WorkEntry {
   workEntryId: number;
   employeeId: number;
+  employeeCode?: string;
   employeeName?: string;
+  username?: string;
   workDate: string;
   dayName?: string;
   workItemId?: number;

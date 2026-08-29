@@ -573,11 +573,9 @@ export class ApiService {
       entries = entries.filter(e => this.isEntryOwner(e, user));
     }
 
-    let csv = 'WorkEntryId,EmployeeName,WorkDate,TaskNumber,Description,Category,PlannedHours,MeetingHours,WorkHours,TotalHours,Status,Remarks
-';
+    let csv = 'WorkEntryId,EmployeeName,WorkDate,TaskNumber,Description,Category,PlannedHours,MeetingHours,WorkHours,TotalHours,Status,Remarks\\n';
     entries.forEach(e => {
-      csv += `${e.workEntryId},"${e.employeeName || 'User'}","${e.workDate}","${e.taskNumber}","${(e.description || '').replace(/"/g, '""')}","${e.categoryName}",${e.plannedEffortHours},${e.meetingEffortHours},${e.workEffortHours},${e.totalEffortHours},"${e.status}","${(e.remarks || '').replace(/"/g, '""')}"
-`;
+      csv += `${e.workEntryId},"${e.employeeName || 'User'}","${e.workDate}","${e.taskNumber}","${(e.description || '').replace(/"/g, '""')}","${e.categoryName}",${e.plannedEffortHours},${e.meetingEffortHours},${e.workEffortHours},${e.totalEffortHours},"${e.status}","${(e.remarks || '').replace(/"/g, '""')}\\n`;
     });
     return of(new Blob([csv], { type: 'text/csv' }));
   }
