@@ -58,7 +58,7 @@ import { ApiService } from '../../core/services/api.service';
                 <td><span class="mono-badge">{{ emp.employeeCode }}</span></td>
                 <td><strong>{{ emp.fullName }}</strong></td>
                 <td>
-                  <span style="font-size: 12px; color: var(--gold-highlight);">@{{ emp.username || emp.employeeCode }}</span>
+                  <span style="font-size: 12px; color: var(--gold-highlight);">&#64;{{ emp.username || emp.employeeCode }}</span>
                   <div style="font-size: 11px; color: var(--text-muted);">{{ emp.email || emp.username + '@company.com' }}</div>
                 </td>
                 <td>
