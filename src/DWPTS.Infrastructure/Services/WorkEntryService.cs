@@ -66,7 +66,7 @@ public class WorkEntryService : IWorkEntryService
             .Include(e => e.WorkItem)
             .Include(e => e.RemarksHistory)
                 .ThenInclude(r => r.User)
-            .Where(e => !e.IsDeleted && e.WorkDate.Date == targetDate)
+            .Where(e => !e.IsDeleted && e.WorkDate >= targetDate && e.WorkDate < targetDate.AddDays(1))
             .OrderBy(e => e.WorkEntryId)
             .Select(e => new WorkEntryDto
             {
@@ -372,7 +372,7 @@ public class WorkEntryService : IWorkEntryService
         var targetDate = request.TargetDate.Date;
 
         var sourceQuery = _context.WorkEntries
-            .Where(e => !e.IsDeleted && e.WorkDate.Date == sourceDate);
+            .Where(e => !e.IsDeleted && e.WorkDate >= sourceDate && e.WorkDate < sourceDate.AddDays(1));
 
         if (request.SelectedEntryIds != null && request.SelectedEntryIds.Any())
         {

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DWPTS.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8627efc8620bb5d4d2c7d00bc4d5569a890533cd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+42b884e6aa1cca8e624f9983b9044f8812539c84")]
 [assembly: System.Reflection.AssemblyProductAttribute("DWPTS.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DWPTS.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
