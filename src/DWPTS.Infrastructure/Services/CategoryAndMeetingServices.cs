@@ -193,6 +193,16 @@ public class MeetingService : IMeetingService
         return ApiResponse<MeetingDto>.Ok(request);
     }
 
+        public async Task<ApiResponse> DeleteMeetingAsync(int id)
+    {
+        var meeting = await _context.Meetings.FindAsync(id);
+        if (meeting == null) return ApiResponse.Fail("Meeting not found.");
+
+        _context.Meetings.Remove(meeting);
+        await _context.SaveChangesAsync();
+        return ApiResponse.Ok("Meeting deleted.");
+    }
+
     public async Task<ApiResponse<List<MeetingAnalysisDto>>> GetMeetingAnalysisAsync(DateTime? fromDate = null, DateTime? toDate = null)
     {
         var query = _context.WorkEntries

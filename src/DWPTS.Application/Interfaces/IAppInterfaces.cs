@@ -64,6 +64,7 @@ public interface IMeetingService
     Task<ApiResponse<List<MeetingDto>>> GetAllMeetingsAsync();
     Task<ApiResponse<MeetingDto>> CreateMeetingAsync(MeetingDto request);
     Task<ApiResponse<MeetingDto>> UpdateMeetingAsync(int id, MeetingDto request);
+    Task<ApiResponse> DeleteMeetingAsync(int id);
     Task<ApiResponse<List<MeetingAnalysisDto>>> GetMeetingAnalysisAsync(DateTime? fromDate = null, DateTime? toDate = null);
 }
 

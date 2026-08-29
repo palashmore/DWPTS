@@ -255,10 +255,9 @@ export class MeetingsComponent implements OnInit {
 
   deleteMeeting(id: number) {
     if (confirm('Are you sure you want to delete this meeting master?')) {
-      const all: Meeting[] = JSON.parse(localStorage.getItem('dwpts_meetings') || '[]');
-      const filtered = all.filter(m => m.meetingId !== id);
-      localStorage.setItem('dwpts_meetings', JSON.stringify(filtered));
-      this.loadMeetings();
+      this.api.deleteMeeting(id).subscribe(() => {
+        this.loadMeetings();
+      });
     }
   }
 }

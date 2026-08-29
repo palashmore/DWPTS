@@ -433,40 +433,55 @@ export class ApiService {
   }
 
   getMeetings(): Observable<ApiResponse<Meeting[]>> {
-    const defaultMeets: Meeting[] = [
-      { meetingId: 1, meetingName: 'BYD SYNC UP Meeting', defaultDurationHours: 1.0, isActive: true },
-      { meetingId: 2, meetingName: 'CRM Walkthrough Meeting', defaultDurationHours: 1.0, isActive: true },
-      { meetingId: 3, meetingName: 'DMS Walkthrough Meeting', defaultDurationHours: 1.0, isActive: true },
-      { meetingId: 4, meetingName: 'Daily Stand Up', defaultDurationHours: 0.5, isActive: true },
-      { meetingId: 5, meetingName: 'FC Clarification', defaultDurationHours: 1.0, isActive: true },
-      { meetingId: 6, meetingName: 'Sprint Planning', defaultDurationHours: 2.0, isActive: true }
-    ];
-
     const localMeets: Meeting[] = JSON.parse(localStorage.getItem(this.LS_MEETINGS) || '[]');
-    if (localMeets.length === 0) {
-      localStorage.setItem(this.LS_MEETINGS, JSON.stringify(defaultMeets));
-      return of({ success: true, message: 'OK', data: defaultMeets });
-    }
-
-    return of({ success: true, message: 'OK', data: localMeets });
+    return this.http.get<ApiResponse<Meeting[]>>(`${this.baseUrl}/meetings`).pipe(
+      tap(res => {
+        if (res.success && res.data) {
+          localStorage.setItem(this.LS_MEETINGS, JSON.stringify(res.data));
+        }
+      }),
+      catchError(() => of({ success: true, message: 'OK', data: localMeets }))
+    );
   }
 
   createMeeting(meeting: any): Observable<ApiResponse<Meeting>> {
     const localMeets: Meeting[] = JSON.parse(localStorage.getItem(this.LS_MEETINGS) || '[]');
-    const newMeet: Meeting = {
-      meetingId: Date.now(),
-      meetingName: meeting.meetingName,
-      defaultDurationHours: Number(meeting.defaultDurationHours || 1.0),
-      description: meeting.description || '',
-      isActive: true
-    };
-    localMeets.push(newMeet);
-    localStorage.setItem(this.LS_MEETINGS, JSON.stringify(localMeets));
-    return of({ success: true, message: 'Meeting created successfully', data: newMeet });
+    return this.http.post<ApiResponse<Meeting>>(`${this.baseUrl}/meetings`, meeting).pipe(
+      tap(res => {
+        if (res.success && res.data) {
+          const updated = [...localMeets.filter(m => m.meetingId !== res.data.meetingId), res.data];
+          localStorage.setItem(this.LS_MEETINGS, JSON.stringify(updated));
+        }
+      }),
+      catchError(() => {
+        const newMeet: Meeting = {
+          meetingId: Date.now(),
+          meetingName: meeting.meetingName,
+          defaultDurationHours: Number(meeting.defaultDurationHours || 1.0),
+          description: meeting.description || '',
+          isActive: true
+        };
+        localMeets.push(newMeet);
+        localStorage.setItem(this.LS_MEETINGS, JSON.stringify(localMeets));
+        return of({ success: true, message: 'Meeting created', data: newMeet });
+      })
+    );
+  }
+
+  deleteMeeting(id: number): Observable<ApiResponse> {
+    const localMeets: Meeting[] = JSON.parse(localStorage.getItem(this.LS_MEETINGS) || '[]');
+    const remaining = localMeets.filter(m => m.meetingId !== id);
+    localStorage.setItem(this.LS_MEETINGS, JSON.stringify(remaining));
+
+    return this.http.delete<ApiResponse>(`${this.baseUrl}/meetings/${id}`).pipe(
+      catchError(() => of({ success: true, message: 'Meeting deleted' }))
+    );
   }
 
   getMeetingAnalysis(fromDate?: string, toDate?: string): Observable<ApiResponse<MeetingAnalysis[]>> {
-    return of({ success: true, message: 'OK', data: [] });
+    return this.http.get<ApiResponse<MeetingAnalysis[]>>(`${this.baseUrl}/meetings/analysis`).pipe(
+      catchError(() => of({ success: true, message: 'OK', data: [] }))
+    );
   }
 
     // Work Items Backlog
