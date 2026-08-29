@@ -298,7 +298,9 @@ export class CalendarComponent implements OnInit {
       const curDate = new Date(this.year, this.month - 1, d);
       const dayIdx = curDate.getDay();
       const isWeekend = dayIdx === 0 || dayIdx === 6;
-            // Official Public Holidays (e.g. 15 Aug Independence Day, 26 Jan Republic Day, 2 Oct Gandhi Jayanti)
+      const dateStr = `${this.year}-${String(this.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+      // Official Public Holidays (e.g. 15 Aug Independence Day, 26 Jan Republic Day, 2 Oct Gandhi Jayanti)
       const officialHolidays: Record<string, string> = {
         '2026-01-26': 'Republic Day',
         '2026-08-15': 'Independence Day',
@@ -311,7 +313,6 @@ export class CalendarComponent implements OnInit {
 
       const holidayName = officialHolidays[dateStr] || (customHol ? customHol.holidayName : null);
       const isHoliday = !!holidayName;
-      const dateStr = `${this.year}-${String(this.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
       if (!isWeekend && !isHoliday) {
         totalWorkDaysInMonth++;
@@ -348,30 +349,4 @@ export class CalendarComponent implements OnInit {
       });
     }
 
-    this.days = generatedDays;
-    this.totalWorkHours = workSum;
-    this.totalMeetingHours = meetSum;
-    this.combinedTotalHours = workSum + meetSum;
-    this.workingDaysCount = totalWorkDaysInMonth;
-    this.loggedDaysCount = loggedDays;
-  }
 
-  changeMonth(delta: number) {
-    this.month += delta;
-    if (this.month > 12) { this.month = 1; this.year++; }
-    if (this.month < 1) { this.month = 12; this.year--; }
-    this.loadCalendar();
-  }
-
-  getDayClass(day: CalendarDay): string {
-    if (day.totalHours >= 8) return 'complete';
-    if (day.totalHours > 0) return 'partial';
-    if (day.isHoliday) return 'holiday';
-    if (day.isWeekend) return 'weekend';
-    return 'unfilled';
-  }
-
-  openDay(day: CalendarDay) {
-    this.router.navigate(['/daily-work'], { queryParams: { date: day.date } });
-  }
-}
