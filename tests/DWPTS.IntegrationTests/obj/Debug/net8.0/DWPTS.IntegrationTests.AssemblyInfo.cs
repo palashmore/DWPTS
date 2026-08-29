@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DWPTS.IntegrationTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+35495112c773a33e2fd1035a3cc6b81275654c73")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+990506ed9e07c3309aa65a4623eb8a17e185f54e")]
 [assembly: System.Reflection.AssemblyProductAttribute("DWPTS.IntegrationTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DWPTS.IntegrationTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

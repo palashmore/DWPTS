@@ -157,6 +157,13 @@ export class ApiService {
     }
 
     return this.http.get<ApiResponse<DailyWorkScreen>>(`${this.baseUrl}/work-entries/daily`, { params }).pipe(
+      tap(res => {
+        if (res.success && res.data && res.data.entries) {
+          const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+          const otherDays = allEntries.filter(e => (e.workDate || '').substring(0, 10) !== targetDate);
+          localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...res.data.entries, ...otherDays]));
+        }
+      }),
       catchError(() => of({ success: true, message: 'Loaded local sync data', data: getLocalScreen() }))
     );
   }
@@ -165,49 +172,41 @@ export class ApiService {
     const user = this.getCurrentUser();
     const isAdmin = this.isAdminOrManager();
 
-    let entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
-    
-    // Strict isolation: Employees only see their own tasks
-    if (!isAdmin) {
-      entries = entries.filter(e => this.isEntryOwner(e, user));
-    } else if (filter.employeeCode && filter.employeeCode !== 'ALL') {
-      entries = entries.filter(e => 
-        (e.employeeCode && e.employeeCode.toLowerCase() === filter.employeeCode.toLowerCase()) || 
-        (e.username && e.username.toLowerCase() === filter.employeeCode.toLowerCase())
-      );
-    }
+    let params = new HttpParams()
+      .set('pageNumber', (filter.pageNumber || 1).toString())
+      .set('pageSize', (filter.pageSize || 50).toString());
 
-    if (filter.searchTerm) {
-      const s = filter.searchTerm.toLowerCase();
-      entries = entries.filter(e => 
-        (e.description || '').toLowerCase().includes(s) || 
-        (e.taskNumber || '').toLowerCase().includes(s) ||
-        (e.employeeName || '').toLowerCase().includes(s)
-      );
-    }
-    if (filter.categoryId) {
-      entries = entries.filter(e => e.categoryId === Number(filter.categoryId));
-    }
-    if (filter.status) {
-      entries = entries.filter(e => e.status === filter.status);
-    }
-    if (filter.fromDate) {
-      entries = entries.filter(e => (e.workDate || '') >= filter.fromDate);
-    }
-    if (filter.toDate) {
-      entries = entries.filter(e => (e.workDate || '') <= filter.toDate);
-    }
+    if (filter.fromDate) params = params.set('fromDate', filter.fromDate);
+    if (filter.toDate) params = params.set('toDate', filter.toDate);
+    if (filter.categoryId) params = params.set('categoryId', filter.categoryId.toString());
+    if (filter.searchTerm) params = params.set('searchTerm', filter.searchTerm);
+    if (filter.status) params = params.set('status', filter.status);
+    if (!isAdmin && user?.employeeId) params = params.set('employeeId', user.employeeId.toString());
 
-    const paged: PagedResult<WorkEntry> = {
-      items: entries,
-      totalCount: entries.length,
-      pageNumber: 1,
-      pageSize: 50,
-      totalPages: 1,
-      hasPreviousPage: false,
-      hasNextPage: false
+    const getLocalPaged = (): PagedResult<WorkEntry> => {
+      let entries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+      if (!isAdmin) {
+        entries = entries.filter(e => this.isEntryOwner(e, user));
+      } else if (filter.employeeCode && filter.employeeCode !== 'ALL') {
+        entries = entries.filter(e => 
+          (e.employeeCode && e.employeeCode.toLowerCase() === filter.employeeCode.toLowerCase()) || 
+          (e.username && e.username.toLowerCase() === filter.employeeCode.toLowerCase())
+        );
+      }
+      return {
+        items: entries,
+        totalCount: entries.length,
+        pageNumber: filter.pageNumber || 1,
+        pageSize: filter.pageSize || 50,
+        totalPages: Math.ceil(entries.length / (filter.pageSize || 50)) || 1,
+        hasPreviousPage: false,
+        hasNextPage: false
+      };
     };
-    return of({ success: true, message: 'OK', data: paged });
+
+    return this.http.get<ApiResponse<PagedResult<WorkEntry>>>(`${this.baseUrl}/work-entries`, { params }).pipe(
+      catchError(() => of({ success: true, message: 'OK', data: getLocalPaged() }))
+    );
   }
 
   createWorkEntry(entry: any): Observable<ApiResponse<WorkEntry>> {
