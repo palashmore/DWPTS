@@ -183,13 +183,4 @@ public class SystemSettingsController : ControllerBase
     }
 }
 
-[ApiController]
-[Route("health")]
-public class HealthController : ControllerBase
-{
-    [HttpGet]
-    public IActionResult GetHealth()
-    {
-        return Ok(new { status = "Healthy", timestamp = DateTime.UtcNow, service = "DWPTS.API" });
-    }
-}
+
