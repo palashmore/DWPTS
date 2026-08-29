@@ -58,6 +58,10 @@ import { DailyWorkScreen, WorkEntry, Category, Meeting } from '../../core/models
             <span class="btn-icon">📋</span>
             <span>Copy Previous Day</span>
           </button>
+          <button class="btn btn-secondary btn-pill" style="border-color: var(--gold-highlight); color: var(--gold-highlight);" (click)="openAiPlanModal()">
+            <span class="btn-icon">🤖</span>
+            <span>✨ AI Quick Plan & Insert</span>
+          </button>
           <button class="btn btn-primary btn-pill cta-glow" (click)="openAddModal()">
             <span class="btn-icon">✨</span>
             <span>+ Add Work Entry</span>
@@ -387,6 +391,37 @@ import { DailyWorkScreen, WorkEntry, Category, Meeting } from '../../core/models
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- AI Quick Plan & Insert Modal -->
+      <div class="modal-backdrop" *ngIf="showAiPlanModal" (click)="onBackdropClick($event)">
+        <div class="modal-dialog">
+          <div class="modal-header-hero">
+            <div>
+              <h3>🤖 AI Natural Language Daily Work Planner</h3>
+              <span class="modal-date-tag">Type what you worked on or plan to do in plain English</span>
+            </div>
+            <button class="modal-close-button" (click)="showAiPlanModal = false">×</button>
+          </div>
+
+          <div style="padding: 10px 0;">
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+              Example: <em>"4h Development on Task #358112 password reset; 2h bug fix on shipment cost; 1h sprint standup meeting"</em>
+            </p>
+            <textarea 
+              [(ngModel)]="aiPlanText" 
+              rows="4" 
+              placeholder="Paste your daily task notes or type in natural language..." 
+              style="width: 100%; border-radius: var(--radius-md); background: var(--bg-navy-deep); border: 1px solid var(--border-gold); color: var(--text-primary); padding: 12px; font-size: 13.5px; outline: none;"></textarea>
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary btn-pill" (click)="showAiPlanModal = false">Cancel</button>
+            <button type="button" class="btn btn-primary btn-pill cta-glow" [disabled]="!aiPlanText.trim() || isAiPlanning" (click)="parseAndInsertAiPlan()">
+              <span>{{ isAiPlanning ? '✨ AI Parsing & Inserting...' : '✨ Parse & Insert into Daily Work' }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1081,6 +1116,38 @@ export class DailyWorkComponent implements OnInit {
       },
       error: err => {
         this.showToast(err.error?.message || 'Error copying entries', 'error');
+      }
+    });
+  }
+
+  openAiPlanModal() {
+    this.aiPlanText = '';
+    this.showAiPlanModal = true;
+  }
+
+  parseAndInsertAiPlan() {
+    if (!this.aiPlanText.trim()) return;
+    this.isAiPlanning = true;
+    this.api.parseAIPlan(this.aiPlanText).subscribe({
+      next: res => {
+        this.isAiPlanning = false;
+        const drafts = res.data || [];
+        drafts.forEach(d => {
+          this.api.createWorkEntry({
+            ...d,
+            workDate: this.selectedDate,
+            plannedEffortHours: d.plannedEffortHours || (d.workEffortHours + d.meetingEffortHours) || 4.0,
+            status: 'In Progress',
+            remarks: 'AI Quick Planned'
+          }).subscribe();
+        });
+        this.showToast(`✨ ${drafts.length} task(s) inserted into Daily Work by AI!`, 'success');
+        this.showAiPlanModal = false;
+        setTimeout(() => this.loadData(), 400);
+      },
+      error: () => {
+        this.isAiPlanning = false;
+        this.showToast('AI planning failed', 'error');
       }
     });
   }
