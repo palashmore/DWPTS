@@ -12,29 +12,60 @@ import { Leave } from '../../core/models/models';
     <div class="leaves-page">
       <div class="page-title-row">
         <div>
-          <h2>🏖️ Leave Management & Time-Off</h2>
-          <p class="subtitle">Apply for planned leaves, festival holidays, and track approval matrix</p>
+          <h2>🏖️ Leave Management & Available Balances</h2>
+          <p class="subtitle">Official leave quotas, festival approvals, and balance ledger</p>
         </div>
         <button class="btn btn-primary" (click)="openApplyModal()">+ Apply Leave Request</button>
       </div>
 
-      <!-- KPI Summary Cards -->
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <span class="kpi-label">Total Leaves Taken</span>
-          <span class="kpi-value" style="color: var(--text-gold);">{{ totalLeavesDays }} days</span>
+      <!-- Real-Time Leave Quota & Balance Cards -->
+      <div class="quota-grid">
+        <div class="quota-card el-card">
+          <div class="quota-top">
+            <span class="quota-code">EL - Earned Leave</span>
+            <span class="quota-total-badge">Quota: 44</span>
+          </div>
+          <div class="quota-balance-val">{{ elBalance }} <span class="days-lbl">Days Left</span></div>
+          <div class="quota-footer">
+            <span>Used: <strong>{{ elUsed }}</strong></span>
+            <span>Allocated: <strong>44</strong></span>
+          </div>
         </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Approved Requests</span>
-          <span class="kpi-value" style="color: #34D399;">{{ approvedLeavesCount }}</span>
+
+        <div class="quota-card cl-card">
+          <div class="quota-top">
+            <span class="quota-code">CL - Casual Leave</span>
+            <span class="quota-total-badge">Quota: 12</span>
+          </div>
+          <div class="quota-balance-val" style="color: #34D399;">{{ clBalance }} <span class="days-lbl">Days Left</span></div>
+          <div class="quota-footer">
+            <span>Used: <strong>{{ clUsed }}</strong></span>
+            <span>Allocated: <strong>12</strong></span>
+          </div>
         </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Pending Approval</span>
-          <span class="kpi-value" style="color: #FBBF24;">{{ pendingLeavesCount }}</span>
+
+        <div class="quota-card sl-card">
+          <div class="quota-top">
+            <span class="quota-code">SL - Sick Leave</span>
+            <span class="quota-total-badge">Quota: 10</span>
+          </div>
+          <div class="quota-balance-val" style="color: #60A5FA;">{{ slBalance }} <span class="days-lbl">Days Left</span></div>
+          <div class="quota-footer">
+            <span>Used: <strong>{{ slUsed }}</strong></span>
+            <span>Allocated: <strong>10</strong></span>
+          </div>
         </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Available Casual / Optional</span>
-          <span class="kpi-value" style="color: #60A5FA;">12 days</span>
+
+        <div class="quota-card oh-card">
+          <div class="quota-top">
+            <span class="quota-code">Optional / Festival</span>
+            <span class="quota-total-badge">Select 1</span>
+          </div>
+          <div class="quota-balance-val" style="color: #F472B6;">{{ ohBalance }} <span class="days-lbl">Available</span></div>
+          <div class="quota-footer">
+            <span>Used: <strong>{{ ohUsed }}</strong></span>
+            <span>Quota: <strong>1</strong></span>
+          </div>
         </div>
       </div>
 
@@ -62,10 +93,10 @@ import { Leave } from '../../core/models/models';
             <tbody>
               <tr *ngFor="let l of leaves">
                 <td><strong>{{ l.employeeName }}</strong></td>
-                <td><span class="leave-type-pill">{{ l.leaveTypeName }}</span></td>
+                <td><span class="leave-type-pill" [ngClass]="getLeaveClass(l.leaveTypeName)">{{ l.leaveTypeName }}</span></td>
                 <td><strong>{{ l.fromDate | date:'mediumDate' }}</strong></td>
                 <td><strong>{{ l.toDate | date:'mediumDate' }}</strong></td>
-                <td>{{ l.durationDays }} day(s) ({{ l.durationHours }}h)</td>
+                <td><strong>{{ l.durationDays }} day(s)</strong> ({{ l.durationHours }}h)</td>
                 <td>{{ l.reason || '-' }}</td>
                 <td>
                   <span class="badge" [ngClass]="{'status-completed': l.status === 'Approved', 'status-inprogress': l.status === 'Pending', 'status-warning': l.status === 'Rejected'}">
@@ -100,10 +131,10 @@ import { Leave } from '../../core/models/models';
               <div class="form-group full-width">
                 <label>Leave Type *</label>
                 <select class="form-control" [(ngModel)]="leaveForm.leaveTypeName">
-                  <option value="Casual Leave">Casual Leave (CL)</option>
-                  <option value="Sick Leave">Sick Leave (SL)</option>
-                  <option value="Earned Leave">Earned / Privilege Leave (EL)</option>
-                  <option value="Optional Holiday">Optional Holiday / Festival Leave (Rakhi / Eid / Diwali)</option>
+                  <option value="Earned Leave">EL - Earned Leave (Balance: {{ elBalance }} days)</option>
+                  <option value="Casual Leave">CL - Casual Leave (Balance: {{ clBalance }} days)</option>
+                  <option value="Sick Leave">SL - Sick Leave (Balance: {{ slBalance }} days)</option>
+                  <option value="Optional Holiday">Optional Holiday / Festival (Rakhi / Eid / Diwali)</option>
                   <option value="Compensatory Off">Compensatory Off (Comp-Off)</option>
                 </select>
               </div>
@@ -124,7 +155,7 @@ import { Leave } from '../../core/models/models';
 
               <div class="form-group full-width">
                 <label>Reason / Comments *</label>
-                <textarea class="form-control" rows="3" placeholder="e.g. Rakhi festival celebration, Personal appointment" [(ngModel)]="leaveForm.reason"></textarea>
+                <textarea class="form-control" rows="3" placeholder="e.g. Rakhi festival celebration, Personal leave" [(ngModel)]="leaveForm.reason"></textarea>
               </div>
             </div>
           </div>
@@ -143,19 +174,51 @@ import { Leave } from '../../core/models/models';
     .page-title-row h2 { font-size: 22px; font-weight: 800; color: var(--text-primary); }
     .subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-    .kpi-card {
+    .quota-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .quota-card {
       background: var(--bg-card);
       border: 1px solid var(--border-gold-subtle);
       border-radius: var(--radius-lg);
-      padding: 14px 18px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       box-shadow: var(--shadow-sm);
     }
-    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-    .kpi-value { font-size: 22px; font-weight: 800; }
+    .el-card { border-left: 4px solid var(--gold-primary); }
+    .cl-card { border-left: 4px solid #34D399; }
+    .sl-card { border-left: 4px solid #60A5FA; }
+    .oh-card { border-left: 4px solid #F472B6; }
+
+    .quota-top { display: flex; justify-content: space-between; align-items: center; }
+    .quota-code { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .quota-total-badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-gold);
+    }
+    .quota-balance-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-gold);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .days-lbl { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+    .quota-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 6px;
+    }
+    .quota-footer strong { color: #fff; }
 
     .leave-type-pill {
       background: rgba(96, 165, 250, 0.15);
@@ -166,6 +229,10 @@ import { Leave } from '../../core/models/models';
       font-size: 11px;
       font-weight: 700;
     }
+    .pill-el { background: rgba(234, 179, 8, 0.15); color: #EAB308; border-color: rgba(234, 179, 8, 0.3); }
+    .pill-cl { background: rgba(52, 211, 153, 0.15); color: #34D399; border-color: rgba(52, 211, 153, 0.3); }
+    .pill-sl { background: rgba(96, 165, 250, 0.15); color: #60A5FA; border-color: rgba(96, 165, 250, 0.3); }
+    .pill-oh { background: rgba(244, 114, 182, 0.15); color: #F472B6; border-color: rgba(244, 114, 182, 0.3); }
 
     .modal-backdrop {
       position: fixed;
@@ -234,8 +301,14 @@ export class LeavesComponent implements OnInit {
   leaves: Leave[] = [];
   showModal = false;
 
+  // Quota Allotments
+  readonly TOTAL_EL = 44;
+  readonly TOTAL_CL = 12;
+  readonly TOTAL_SL = 10;
+  readonly TOTAL_OH = 1;
+
   leaveForm = {
-    leaveTypeName: 'Casual Leave',
+    leaveTypeName: 'Earned Leave',
     fromDate: '2026-08-28',
     toDate: '2026-08-28',
     reason: ''
@@ -252,16 +325,53 @@ export class LeavesComponent implements OnInit {
     this.loadLeaves();
   }
 
-  get totalLeavesDays(): number {
-    return this.leaves.reduce((sum, l) => sum + (l.durationDays || 0), 0);
+  get elUsed(): number {
+    return this.leaves
+      .filter(l => (l.leaveTypeName || '').toLowerCase().includes('earned') && l.status === 'Approved')
+      .reduce((sum, l) => sum + (l.durationDays || 0), 0);
   }
 
-  get approvedLeavesCount(): number {
-    return this.leaves.filter(l => l.status === 'Approved').length;
+  get elBalance(): number {
+    return Math.max(0, this.TOTAL_EL - this.elUsed);
   }
 
-  get pendingLeavesCount(): number {
-    return this.leaves.filter(l => l.status === 'Pending').length;
+  get clUsed(): number {
+    return this.leaves
+      .filter(l => (l.leaveTypeName || '').toLowerCase().includes('casual') && l.status === 'Approved')
+      .reduce((sum, l) => sum + (l.durationDays || 0), 0);
+  }
+
+  get clBalance(): number {
+    return Math.max(0, this.TOTAL_CL - this.clUsed);
+  }
+
+  get slUsed(): number {
+    return this.leaves
+      .filter(l => (l.leaveTypeName || '').toLowerCase().includes('sick') && l.status === 'Approved')
+      .reduce((sum, l) => sum + (l.durationDays || 0), 0);
+  }
+
+  get slBalance(): number {
+    return Math.max(0, this.TOTAL_SL - this.slUsed);
+  }
+
+  get ohUsed(): number {
+    return this.leaves
+      .filter(l => (l.leaveTypeName || '').toLowerCase().includes('optional') && l.status === 'Approved')
+      .reduce((sum, l) => sum + (l.durationDays || 0), 0);
+  }
+
+  get ohBalance(): number {
+    return Math.max(0, this.TOTAL_OH - this.ohUsed);
+  }
+
+  getLeaveClass(type: string | undefined): string {
+    const t = (type || '').toLowerCase();
+    if (t.includes('earned')) return 'pill-el';
+    if (t.includes('casual')) return 'pill-cl';
+    if (t.includes('sick')) return 'pill-sl';
+    if (t.includes('optional')) return 'pill-oh';
+    return '';
   }
 
   loadLeaves() {
@@ -273,7 +383,7 @@ export class LeavesComponent implements OnInit {
   openApplyModal() {
     const today = new Date().toISOString().substring(0, 10);
     this.leaveForm = {
-      leaveTypeName: 'Casual Leave',
+      leaveTypeName: 'Earned Leave',
       fromDate: today,
       toDate: today,
       reason: ''
