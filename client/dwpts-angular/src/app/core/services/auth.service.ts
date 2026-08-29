@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, tap, timeout } from 'rxjs/operators';
 import { ApiResponse, LoginResponse, UserProfile } from '../models/models';
 
@@ -11,13 +11,13 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
 
   private readonly MASTER_USERS = [
-    { username: 'admin', email: 'admin@company.com', password: 'Admin@123', fullName: 'Admin User', role: 'ADMIN', empCode: 'EMP001', dept: 'Engineering', desig: 'Lead Architect' },
-    { username: 'palashadmin', email: 'palashm@gmail.com', password: 'Password@123', fullName: 'palash Admin', role: 'ADMIN', empCode: 'EMP004', dept: 'Engineering', desig: 'Software Engineer' },
-    { username: 'palashm', email: 'palash123more@gmail.com', password: 'Password@123', fullName: 'palash more', role: 'EMPLOYEE', empCode: 'EMP005', dept: 'Engineering', desig: 'Software Engineer' },
-    { username: 'pallavi', email: 'pallavi@company.com', password: 'Password@123', fullName: 'Pallavi Sharma', role: 'EMPLOYEE', empCode: 'EMP_PALLAVI', dept: 'Quality Assurance', desig: 'QA Automation Engineer' },
-    { username: 'sagar', email: 'sagar@company.com', password: 'Password@123', fullName: 'Sagar Patil', role: 'EMPLOYEE', empCode: 'EMP_SAGAR', dept: 'Engineering', desig: 'Backend Developer' },
-    { username: 'manager', email: 'manager@company.com', password: 'Manager@123', fullName: 'Team Manager', role: 'MANAGER', empCode: 'EMP002', dept: 'Management', desig: 'Engineering Manager' },
-    { username: 'employee', email: 'employee@company.com', password: 'Employee@123', fullName: 'Software Engineer', role: 'EMPLOYEE', empCode: 'EMP003', dept: 'Engineering', desig: 'Senior Developer' }
+    { employeeId: 1, userId: 1, username: 'admin', email: 'admin@company.com', password: 'Admin@123', fullName: 'Admin User', role: 'ADMIN', empCode: 'EMP001', dept: 'Engineering', desig: 'Lead Architect' },
+    { employeeId: 2, userId: 2, username: 'manager', email: 'manager@company.com', password: 'Manager@123', fullName: 'Team Manager', role: 'MANAGER', empCode: 'EMP002', dept: 'Management', desig: 'Engineering Manager' },
+    { employeeId: 3, userId: 3, username: 'employee', email: 'employee@company.com', password: 'Employee@123', fullName: 'Software Engineer', role: 'EMPLOYEE', empCode: 'EMP003', dept: 'Engineering', desig: 'Senior Developer' },
+    { employeeId: 4, userId: 4, username: 'palashadmin', email: 'palashm@gmail.com', password: 'Password@123', fullName: 'palash Admin', role: 'ADMIN', empCode: 'EMP004', dept: 'Engineering', desig: 'Software Engineer' },
+    { employeeId: 5, userId: 5, username: 'palashm', email: 'palash123more@gmail.com', password: 'Password@123', fullName: 'palash more', role: 'EMPLOYEE', empCode: 'EMP005', dept: 'Engineering', desig: 'Software Engineer' },
+    { employeeId: 6, userId: 6, username: 'pallavi', email: 'pallavi@company.com', password: 'Password@123', fullName: 'Pallavi Sharma', role: 'EMPLOYEE', empCode: 'EMP_PALLAVI', dept: 'Quality Assurance', desig: 'QA Automation Engineer' },
+    { employeeId: 7, userId: 7, username: 'sagar', email: 'sagar@company.com', password: 'Password@123', fullName: 'Sagar Patil', role: 'EMPLOYEE', empCode: 'EMP_SAGAR', dept: 'Engineering', desig: 'Backend Developer' }
   ];
 
   constructor(private http: HttpClient) {
@@ -42,36 +42,32 @@ export class AuthService {
   }
 
   login(credentials: { usernameOrEmail: string; password: string }): Observable<ApiResponse<LoginResponse>> {
-    const inputUser = (credentials.usernameOrEmail || '').trim().toLowerCase();
+    const inputUser = (credentials.usernameOrEmail || '').trim().toLowerCase().replace('@', '');
     const inputPass = (credentials.password || '').trim();
 
     const localFallback = (): Observable<ApiResponse<LoginResponse>> => {
       const customUsers: any[] = JSON.parse(localStorage.getItem('dwpts_users') || '[]');
       
-      // 1. Match in Master Users directory
       const masterMatch = this.MASTER_USERS.find(u => {
         const uName = (u.username || '').toLowerCase();
         const uEmail = (u.email || '').toLowerCase();
         const uCode = (u.empCode || '').toLowerCase();
         const uFull = (u.fullName || '').toLowerCase();
-
         return uName === inputUser || uEmail === inputUser || uCode === inputUser || uFull === inputUser;
       });
 
-      // 2. Match in Custom Users directory created via /admin
       const customMatch = customUsers.find(u => {
         const uName = (u.username || '').toLowerCase();
         const uEmail = (u.email || '').toLowerCase();
         const uCode = (u.employeeCode || u.empCode || '').toLowerCase();
         const uFull = (u.fullName || '').toLowerCase();
-
         return uName === inputUser || uEmail === inputUser || uCode === inputUser || uFull === inputUser;
       });
 
       const matched = masterMatch || customMatch;
-
-      // 3. Dynamic authentication fallback for any username entered on mobile
       const matchedUser = matched || {
+        employeeId: 5,
+        userId: 5,
         username: inputUser,
         fullName: inputUser.charAt(0).toUpperCase() + inputUser.slice(1) + ' User',
         email: `${inputUser}@company.com`,
@@ -85,12 +81,13 @@ export class AuthService {
       const normalizedFullName = matchedUser.fullName || (matchedUser.firstName ? `${matchedUser.firstName} ${matchedUser.lastName || ''}`.trim() : inputUser);
       const normalizedEmpCode = matchedUser.employeeCode || matchedUser.empCode || ('EMP_' + normalizedUsername.toUpperCase());
       const normalizedRole = matchedUser.role || (normalizedUsername.includes('admin') ? 'ADMIN' : 'EMPLOYEE');
+      const normalizedEmpId = matchedUser.employeeId || (normalizedUsername === 'palashm' ? 5 : (normalizedUsername === 'palashadmin' ? 4 : 1));
 
       const validUser: UserProfile = {
-        userId: matchedUser.userId || Math.abs(this.hashCode(normalizedUsername)),
+        userId: matchedUser.userId || normalizedEmpId,
         username: normalizedUsername,
         email: matchedUser.email || `${normalizedUsername}@company.com`,
-        employeeId: matchedUser.employeeId || Math.abs(this.hashCode(normalizedUsername)),
+        employeeId: normalizedEmpId,
         employeeCode: normalizedEmpCode,
         fullName: normalizedFullName,
         department: matchedUser.department || matchedUser.dept || 'Engineering',
@@ -114,7 +111,7 @@ export class AuthService {
     };
 
     return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials).pipe(
-      timeout(3000),
+      timeout(4000),
       tap(res => {
         if (res.success && res.data) {
           localStorage.setItem('dwpts_token', res.data.token);
@@ -124,15 +121,6 @@ export class AuthService {
       }),
       catchError(() => localFallback())
     );
-  }
-
-  private hashCode(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash |= 0;
-    }
-    return hash === 0 ? 1 : hash;
   }
 
   logout(): void {

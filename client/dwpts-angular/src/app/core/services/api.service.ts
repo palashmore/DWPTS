@@ -102,6 +102,26 @@ export class ApiService {
     localStorage.setItem(this.LS_MEETINGS, JSON.stringify([]));
   }
 
+  // Synchronize entire workspace with central cloud database
+  syncWithCloud(): void {
+    this.http.get<ApiResponse<PagedResult<WorkEntry>>>(`${this.baseUrl}/work-entries?pageSize=1000`).subscribe({
+      next: (res) => {
+        if (res.success && res.data && res.data.items) {
+          const currentLocal: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+          const cloudItems = res.data.items;
+          const merged = [...cloudItems];
+          currentLocal.forEach(l => {
+            if (!merged.some(m => m.workEntryId === l.workEntryId || (m.taskNumber === l.taskNumber && m.workDate === l.workDate))) {
+              merged.push(l);
+            }
+          });
+          localStorage.setItem(this.LS_ENTRIES, JSON.stringify(merged));
+        }
+      },
+      error: () => {}
+    });
+  }
+
   // Daily Work & Work Entries with Cloud & Multi-Device Sync
   getDailyWork(date: string, selectedEmpCode?: string): Observable<ApiResponse<DailyWorkScreen>> {
     const user = this.getCurrentUser();

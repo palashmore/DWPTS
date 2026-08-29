@@ -1,3 +1,4 @@
+import { ApiService } from './core/services/api.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -625,7 +626,8 @@ export class AppComponent implements OnInit {
   constructor(
     public auth: AuthService, 
     public themeService: ThemeService, 
-    private router: Router
+    private router: Router,
+    private api: ApiService
   ) {}
 
   ngOnInit() {
@@ -635,7 +637,15 @@ export class AppComponent implements OnInit {
         fullName: 'Admin User',
         roles: ['ADMIN']
       };
+      if (u) {
+        this.api.syncWithCloud();
+      }
     });
+
+    this.api.syncWithCloud();
+    setInterval(() => {
+      this.api.syncWithCloud();
+    }, 15000);
   }
 
   get activeThemeOption(): ThemeOption | undefined {
