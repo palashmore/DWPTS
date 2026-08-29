@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { CalendarDay, WorkEntry } from '../../core/models/models';
+import { CalendarDay, WorkEntry, Holiday } from '../../core/models/models';
 
 @Component({
   selector: 'app-calendar',
@@ -43,8 +43,8 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
           <span class="kpi-value" style="color: #34D399;">{{ loggedDaysCount }} / {{ workingDaysCount }}</span>
         </div>
         <div class="kpi-card">
-          <span class="kpi-label">Holidays / Leaves</span>
-          <span class="kpi-value" style="color: #F87171;">{{ holidaysCount }} / {{ leaveDaysCount }}</span>
+          <span class="kpi-label">Holidays in Month</span>
+          <span class="kpi-value" style="color: #F87171;">{{ holidaysCount }}</span>
         </div>
       </div>
 
@@ -68,19 +68,22 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
               <div class="cell-breakdown">W: {{ day.workHours.toFixed(1) }}h | M: {{ day.meetingHours.toFixed(1) }}h</div>
             </div>
 
-            <!-- Empty / Unfilled States -->
-            <div class="cell-body special-badge" *ngIf="day.totalHours === 0 && day.isHoliday">
-              <span class="special-text">🎉 {{ day.holidayName || 'Holiday' }}</span>
+            <!-- Official Holiday Badge -->
+            <div class="cell-body special-badge holiday-badge-cell" *ngIf="day.totalHours === 0 && day.isHoliday">
+              <span class="special-text">🎉 {{ day.holidayName }}</span>
             </div>
 
-            <div class="cell-body special-badge leave-badge" *ngIf="day.totalHours === 0 && day.isLeave">
+            <!-- Leave Badge -->
+            <div class="cell-body special-badge leave-badge" *ngIf="day.totalHours === 0 && day.isLeave && !day.isHoliday">
               <span class="special-text">🏖️ Leave</span>
             </div>
 
-            <div class="cell-body weekend-text" *ngIf="day.totalHours === 0 && day.isWeekend">
+            <!-- Weekend -->
+            <div class="cell-body weekend-text" *ngIf="day.totalHours === 0 && day.isWeekend && !day.isHoliday">
               <span>Weekend</span>
             </div>
 
+            <!-- Unfilled Weekday -->
             <div class="cell-body unfilled-text" *ngIf="day.totalHours === 0 && !day.isWeekend && !day.isHoliday && !day.isLeave">
               <span>No Tasks</span>
             </div>
@@ -90,6 +93,10 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
               <span class="badge" [ngClass]="day.totalHours >= 8 ? 'status-completed' : 'status-ongoing'">
                 {{ day.totalHours >= 8 ? '100% Utilized' : (day.totalHours / 8 * 100).toFixed(0) + '%' }}
               </span>
+            </div>
+
+            <div class="cell-footer" *ngIf="day.totalHours === 0 && day.isHoliday">
+              <span class="badge status-holiday-pill">Public Holiday</span>
             </div>
 
             <div class="cell-footer" *ngIf="day.totalHours === 0 && !day.isWeekend && !day.isHoliday && !day.isLeave">
@@ -179,7 +186,7 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
     }
     .day-cell.holiday {
       border-color: rgba(248, 113, 113, 0.4);
-      background: rgba(248, 113, 113, 0.05);
+      background: rgba(248, 113, 113, 0.08);
     }
     .day-cell.complete {
       border-left: 3px solid #34D399;
@@ -219,7 +226,7 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
       color: rgba(148, 163, 184, 0.6);
     }
     .special-badge { text-align: center; margin: auto 0; }
-    .special-text { font-size: 11px; font-weight: 700; color: #F87171; }
+    .special-text { font-size: 11px; font-weight: 700; color: #F87171; line-height: 1.3; }
     .leave-badge .special-text { color: #60A5FA; }
 
     .cell-footer { display: flex; justify-content: flex-end; }
@@ -233,6 +240,7 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
     .status-completed { background: rgba(52, 211, 153, 0.15); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.3); }
     .status-ongoing { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
     .status-unfilled { background: rgba(148, 163, 184, 0.08); color: rgba(148, 163, 184, 0.6); border: 1px solid rgba(148, 163, 184, 0.15); }
+    .status-holiday-pill { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.3); }
   `]
 })
 export class CalendarComponent implements OnInit {
@@ -253,6 +261,22 @@ export class CalendarComponent implements OnInit {
   loggedDaysCount = 0;
   holidaysCount = 0;
   leaveDaysCount = 0;
+
+  // Official 2026 Company Holiday Master List (Compulsory + Optional)
+  public static readonly OFFICIAL_HOLIDAYS_2026: Record<string, string> = {
+    '2026-01-01': 'New Year',
+    '2026-01-26': 'Republic Day',
+    '2026-03-03': 'Holi',
+    '2026-03-19': 'Gudi Padwa',
+    '2026-05-01': 'Maharashtra Day',
+    '2026-09-14': 'Ganesh Chaturthi',
+    '2026-09-25': 'Ananth Chaturdashi',
+    '2026-10-02': 'Gandhi Jayanti',
+    '2026-10-20': 'Dussehra',
+    '2026-11-10': 'Padwa',
+    '2026-11-11': 'Bhaiduj',
+    '2026-12-25': 'Christmas'
+  };
 
   constructor(private api: ApiService, private router: Router, private signalR: SignalRService) {}
 
@@ -290,14 +314,6 @@ export class CalendarComponent implements OnInit {
     const generatedDays: CalendarDay[] = [];
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    // Official Public Holidays mapped specifically by exact YYYY-MM-DD
-    const officialHolidays: Record<string, string> = {
-      '2026-01-26': 'Republic Day',
-      '2026-08-15': 'Independence Day',
-      '2026-10-02': 'Gandhi Jayanti',
-      '2026-12-25': 'Christmas'
-    };
-
     let workSum = 0;
     let meetSum = 0;
     let totalWorkDaysInMonth = 0;
@@ -311,7 +327,7 @@ export class CalendarComponent implements OnInit {
       const dateStr = `${this.year}-${String(this.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
       const customHol = customHolidays.find(h => (h.holidayDate || '').substring(0, 10) === dateStr);
-      const holidayName = officialHolidays[dateStr] || (customHol ? customHol.holidayName : null);
+      const holidayName = CalendarComponent.OFFICIAL_HOLIDAYS_2026[dateStr] || (customHol ? customHol.holidayName : null);
       const isHoliday = !!holidayName;
 
       if (isHoliday && !isWeekend) {

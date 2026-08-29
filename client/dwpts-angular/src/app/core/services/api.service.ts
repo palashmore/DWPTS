@@ -587,7 +587,22 @@ export class ApiService {
   }
 
   getHolidays(year?: number): Observable<ApiResponse<Holiday[]>> {
-    return of({ success: true, message: 'OK', data: [] });
+    const list: Holiday[] = [
+      { holidayId: 1, holidayName: 'New Year', holidayDate: '2026-01-01', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 2, holidayName: 'Republic Day', holidayDate: '2026-01-26', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 3, holidayName: 'Holi', holidayDate: '2026-03-03', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 4, holidayName: 'Gudi Padwa', holidayDate: '2026-03-19', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 5, holidayName: 'Maharashtra Day', holidayDate: '2026-05-01', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 6, holidayName: 'Ganesh Chaturthi', holidayDate: '2026-09-14', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 7, holidayName: 'Gandhi Jayanti', holidayDate: '2026-10-02', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 8, holidayName: 'Dussehra', holidayDate: '2026-10-20', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 9, holidayName: 'Padwa', holidayDate: '2026-11-10', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 10, holidayName: 'Bhaiduj', holidayDate: '2026-11-11', holidayType: 'Compulsory', isOptional: false },
+      { holidayId: 11, holidayName: 'Ananth Chaturdashi', holidayDate: '2026-09-25', holidayType: 'Optional', isOptional: true },
+      { holidayId: 12, holidayName: 'Christmas', holidayDate: '2026-12-25', holidayType: 'Optional', isOptional: true }
+    ];
+    localStorage.setItem(this.LS_HOLIDAYS, JSON.stringify(list));
+    return of({ success: true, message: 'OK', data: list });
   }
 
   createHoliday(h: any): Observable<ApiResponse<Holiday>> {
