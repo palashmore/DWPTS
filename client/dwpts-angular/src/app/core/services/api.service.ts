@@ -496,6 +496,18 @@ export class ApiService {
     return of({ success: true, message: 'Item updated', data: item });
   }
 
+  getMonthlyCalendar(year: number, month: number): Observable<ApiResponse<CalendarMonth>> {
+    const user = this.getCurrentUser();
+    let params = new HttpParams().set('year', year.toString()).set('month', month.toString());
+    if (user?.employeeId) {
+      params = params.set('employeeId', user.employeeId.toString());
+    }
+
+    return this.http.get<ApiResponse<CalendarMonth>>(`${this.baseUrl}/calendar/monthly`, { params }).pipe(
+      catchError(() => of({ success: false, message: 'Calendar fallback', data: null as any }))
+    );
+  }
+
   // Dashboard, Reports & Analytics
   getDashboard(date?: string, employeeId?: number): Observable<ApiResponse<DashboardSummary>> {
     const user = this.getCurrentUser();

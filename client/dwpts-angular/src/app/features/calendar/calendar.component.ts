@@ -245,9 +245,8 @@ export class CalendarComponent implements OnInit {
     this.api.syncWithCloud();
     this.generateCalendarDays();
     this.api.getMonthlyCalendar(this.year, this.month).subscribe({
-      next: res => {
-        if (res.success && res.data && res.data.days && res.data.days.length > 0) {
-          // Merge server days
+      next: (res: any) => {
+        if (res && res.success && res.data && res.data.days && res.data.days.length > 0) {
           this.days = res.data.days;
           this.totalWorkHours = res.data.totalWorkHours || this.totalWorkHours;
           this.totalMeetingHours = res.data.totalMeetingHours || this.totalMeetingHours;
