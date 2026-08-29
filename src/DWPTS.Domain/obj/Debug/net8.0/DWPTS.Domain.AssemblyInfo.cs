@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DWPTS.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5456ba37df1205d0885ffe5d40b451d357f74890")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c5281033fb996ff5f0d3de1f0cdccfc517526e39")]
 [assembly: System.Reflection.AssemblyProductAttribute("DWPTS.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DWPTS.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

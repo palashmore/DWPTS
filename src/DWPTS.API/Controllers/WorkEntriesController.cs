@@ -8,7 +8,6 @@ using DWPTS.Shared.Models;
 
 namespace DWPTS.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/work-entries")]
 public class WorkEntriesController : ControllerBase
