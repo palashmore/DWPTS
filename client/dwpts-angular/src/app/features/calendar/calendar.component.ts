@@ -70,7 +70,7 @@ import { CalendarDay, WorkEntry } from '../../core/models/models';
 
             <!-- Empty / Unfilled States -->
             <div class="cell-body special-badge" *ngIf="day.totalHours === 0 && day.isHoliday">
-              <span class="special-text">🎉 Holiday</span>
+              <span class="special-text">🎉 {{ day.holidayName || 'Holiday' }}</span>
             </div>
 
             <div class="cell-body special-badge leave-badge" *ngIf="day.totalHours === 0 && day.isLeave">
@@ -286,13 +286,23 @@ export class CalendarComponent implements OnInit {
     this.leadingEmptyDays = Array(firstDayOfWeek).fill(0);
 
     const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem('dwpts_entries') || '[]');
+    const customHolidays: any[] = JSON.parse(localStorage.getItem('dwpts_holidays') || '[]');
     const generatedDays: CalendarDay[] = [];
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Official Public Holidays mapped specifically by exact YYYY-MM-DD
+    const officialHolidays: Record<string, string> = {
+      '2026-01-26': 'Republic Day',
+      '2026-08-15': 'Independence Day',
+      '2026-10-02': 'Gandhi Jayanti',
+      '2026-12-25': 'Christmas'
+    };
 
     let workSum = 0;
     let meetSum = 0;
     let totalWorkDaysInMonth = 0;
     let loggedDays = 0;
+    let monthHolidays = 0;
 
     for (let d = 1; d <= totalDaysInMonth; d++) {
       const curDate = new Date(this.year, this.month - 1, d);
@@ -300,19 +310,13 @@ export class CalendarComponent implements OnInit {
       const isWeekend = dayIdx === 0 || dayIdx === 6;
       const dateStr = `${this.year}-${String(this.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-      // Official Public Holidays (e.g. 15 Aug Independence Day, 26 Jan Republic Day, 2 Oct Gandhi Jayanti)
-      const officialHolidays: Record<string, string> = {
-        '2026-01-26': 'Republic Day',
-        '2026-08-15': 'Independence Day',
-        '2026-10-02': 'Gandhi Jayanti',
-        '2026-12-25': 'Christmas'
-      };
-
-      const customHolidays: any[] = JSON.parse(localStorage.getItem('dwpts_holidays') || '[]');
       const customHol = customHolidays.find(h => (h.holidayDate || '').substring(0, 10) === dateStr);
-
       const holidayName = officialHolidays[dateStr] || (customHol ? customHol.holidayName : null);
       const isHoliday = !!holidayName;
+
+      if (isHoliday && !isWeekend) {
+        monthHolidays++;
+      }
 
       if (!isWeekend && !isHoliday) {
         totalWorkDaysInMonth++;
@@ -349,4 +353,31 @@ export class CalendarComponent implements OnInit {
       });
     }
 
+    this.days = generatedDays;
+    this.totalWorkHours = workSum;
+    this.totalMeetingHours = meetSum;
+    this.combinedTotalHours = workSum + meetSum;
+    this.workingDaysCount = totalWorkDaysInMonth;
+    this.loggedDaysCount = loggedDays;
+    this.holidaysCount = monthHolidays;
+  }
 
+  changeMonth(delta: number) {
+    this.month += delta;
+    if (this.month > 12) { this.month = 1; this.year++; }
+    if (this.month < 1) { this.month = 12; this.year--; }
+    this.loadCalendar();
+  }
+
+  getDayClass(day: CalendarDay): string {
+    if (day.totalHours >= 8) return 'complete';
+    if (day.totalHours > 0) return 'partial';
+    if (day.isHoliday) return 'holiday';
+    if (day.isWeekend) return 'weekend';
+    return 'unfilled';
+  }
+
+  openDay(day: CalendarDay) {
+    this.router.navigate(['/daily-work'], { queryParams: { date: day.date } });
+  }
+}
