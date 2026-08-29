@@ -1284,25 +1284,65 @@ export class DailyWorkComponent implements OnInit {
     });
   }
 
+  recalculateDailyTotals() {
+    if (!this.screenData) return;
+    const entries = this.screenData.entries || [];
+    const planned = entries.reduce((s, e) => s + Number(e.plannedEffortHours || 0), 0);
+    const work = entries.reduce((s, e) => s + Number(e.workEffortHours || 0), 0);
+    const meet = entries.reduce((s, e) => s + Number(e.meetingEffortHours || 0), 0);
+    const actual = work + meet;
+    const capacity = Number(this.screenData.dailyCapacityHours || 8);
+    const remaining = Math.max(0, capacity - actual);
+    const overtime = Math.max(0, actual - capacity);
+    const util = capacity > 0 ? Math.round((actual / capacity) * 100) : 0;
+
+    this.screenData.totalPlannedHours = planned;
+    this.screenData.totalWorkHours = work;
+    this.screenData.totalMeetingHours = meet;
+    this.screenData.totalActualHours = actual;
+    this.screenData.remainingCapacityHours = remaining;
+    this.screenData.overtimeHours = overtime;
+    this.screenData.utilizationPercentage = util;
+    this.screenData.isOverCapacity = actual > capacity;
+  }
+
   clearAllToday() {
-    if (!confirm(`Are you sure you want to delete all ${this.screenData?.entries?.length} entries for ${this.selectedDate}?`)) {
+    if (!this.screenData?.entries?.length) return;
+    if (!confirm(`Are you sure you want to delete all ${this.screenData.entries.length} entries for ${this.selectedDate}?`)) {
       return;
     }
+    const entriesToDelete = [...this.screenData.entries];
+    this.screenData.entries = [];
+    this.recalculateDailyTotals();
+
     const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem('dwpts_entries') || '[]');
-    const remaining = allEntries.filter(e => e.workDate !== this.selectedDate);
+    const remaining = allEntries.filter(e => (e.workDate || '').substring(0, 10) !== this.selectedDate);
     localStorage.setItem('dwpts_entries', JSON.stringify(remaining));
-    this.loadData();
+
+    entriesToDelete.forEach(e => {
+      this.api.deleteWorkEntry(e.workEntryId).subscribe();
+    });
+
     this.showToast('Cleared all entries for today!', 'info');
+    setTimeout(() => this.loadData(), 400);
   }
 
   deleteEntry(id: number) {
     if (confirm('Are you sure you want to delete this work entry?')) {
+      if (this.screenData && this.screenData.entries) {
+        this.screenData.entries = this.screenData.entries.filter(e => e.workEntryId !== id);
+        this.recalculateDailyTotals();
+      }
+
       this.api.deleteWorkEntry(id).subscribe({
         next: () => {
           this.showToast('Work entry deleted successfully!', 'info');
-          this.loadData();
+          setTimeout(() => this.loadData(), 200);
         },
-        error: err => this.showToast(err.error?.message || 'Delete failed', 'error')
+        error: err => {
+          this.showToast(err.error?.message || 'Delete failed', 'error');
+          this.loadData();
+        }
       });
     }
   }

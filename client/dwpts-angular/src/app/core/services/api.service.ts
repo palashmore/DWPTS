@@ -200,11 +200,10 @@ export class ApiService {
     return this.http.get<ApiResponse<DailyWorkScreen>>(`${this.baseUrl}/work-entries/daily`, { params }).pipe(
       tap(res => {
         if (res.success && res.data) {
-          if (res.data.entries && res.data.entries.length > 0) {
-            const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
-            const otherDays = allEntries.filter(e => (e.workDate || '').substring(0, 10) !== targetDate);
-            localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...res.data.entries, ...otherDays]));
-          }
+          const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+          const otherDays = allEntries.filter(e => (e.workDate || '').substring(0, 10) !== targetDate);
+          const currentDayEntries = res.data.entries || [];
+          localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...currentDayEntries, ...otherDays]));
         }
       }),
       catchError(() => of({ success: true, message: 'Loaded local sync data', data: getLocalScreen() }))
