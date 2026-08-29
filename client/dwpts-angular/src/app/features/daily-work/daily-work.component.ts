@@ -989,6 +989,9 @@ export class DailyWorkComponent implements OnInit {
   showModal = false;
   isSaving = false;
   editingEntryId: number | null = null;
+  showAiPlanModal = false;
+  aiPlanText = '';
+  isAiPlanning = false;
 
   toastMessage: string | null = null;
   toastType: 'success' | 'error' | 'info' = 'success';
