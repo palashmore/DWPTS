@@ -320,7 +320,7 @@ import { DailyWorkScreen, WorkEntry, Category, Meeting } from '../../core/models
               </div>
               <div class="form-group">
                 <label>Category</label>
-                <select [(ngModel)]="entryForm.categoryId" name="categoryId">
+                <select [(ngModel)]="entryForm.categoryId" (ngModelChange)="onCategorySelect($event)" name="categoryId">
                   <option *ngFor="let c of categories" [ngValue]="c.categoryId">{{ c.name }}</option>
                 </select>
               </div>
@@ -1070,17 +1070,19 @@ export class DailyWorkComponent implements OnInit {
   }
 
   getWorkPercent(): number {
-    const w = this.screenData?.totalWorkHours || 0;
-    const m = this.screenData?.totalMeetingHours || 0;
+    const w = Number(this.screenData?.totalWorkHours || 0);
+    const m = Number(this.screenData?.totalMeetingHours || 0);
     const total = w + m;
-    return total > 0 ? Math.round((w / total) * 100) : 100;
+    if (total === 0) return 0;
+    return Math.round((w / total) * 100);
   }
 
   getMeetingPercent(): number {
-    const w = this.screenData?.totalWorkHours || 0;
-    const m = this.screenData?.totalMeetingHours || 0;
+    const w = Number(this.screenData?.totalWorkHours || 0);
+    const m = Number(this.screenData?.totalMeetingHours || 0);
     const total = w + m;
-    return total > 0 ? Math.round((m / total) * 100) : 0;
+    if (total === 0) return 0;
+    return Math.round((m / total) * 100);
   }
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
@@ -1245,9 +1247,22 @@ export class DailyWorkComponent implements OnInit {
   }
 
   onEffortChange() {
-    const total = (this.entryForm.meetingEffortHours || 0) + (this.entryForm.workEffortHours || 0);
-    if (this.entryForm.plannedEffortHours === 0 || this.entryForm.plannedEffortHours === 8) {
+    const w = Number(this.entryForm.workEffortHours || 0);
+    const m = Number(this.entryForm.meetingEffortHours || 0);
+    const total = w + m;
+    if (this.entryForm.plannedEffortHours === 0 || this.entryForm.plannedEffortHours === 8 || this.entryForm.plannedEffortHours === undefined) {
       this.entryForm.plannedEffortHours = total;
+    }
+  }
+
+  onCategorySelect(categoryId: number) {
+    const cat = this.categories.find(c => c.categoryId === categoryId);
+    if (cat && cat.name.toLowerCase().includes('meet')) {
+      this.entryForm.workEffortHours = 0;
+      if (this.entryForm.meetingEffortHours === 0) {
+        this.entryForm.meetingEffortHours = 1.0;
+      }
+      this.entryForm.plannedEffortHours = this.entryForm.meetingEffortHours;
     }
   }
 
@@ -1255,11 +1270,14 @@ export class DailyWorkComponent implements OnInit {
     const m = this.meetings.find(x => x.meetingId === meetingId);
     if (m) {
       this.entryForm.meetingName = m.meetingName;
-      if (this.entryForm.meetingEffortHours === 0) {
-        this.entryForm.meetingEffortHours = m.defaultDurationHours;
-      }
-      if (this.entryForm.workEffortHours === 8) {
+      this.entryForm.meetingEffortHours = m.defaultDurationHours;
+      const cat = this.categories.find(c => c.categoryId === this.entryForm.categoryId);
+      if (cat && cat.name.toLowerCase().includes('meet')) {
+        this.entryForm.workEffortHours = 0;
+        this.entryForm.plannedEffortHours = m.defaultDurationHours;
+      } else if (this.entryForm.workEffortHours === 8) {
         this.entryForm.workEffortHours = Math.max(0, 8 - m.defaultDurationHours);
+        this.entryForm.plannedEffortHours = 8;
       }
     }
   }
