@@ -124,20 +124,56 @@ export class ApiService {
     localStorage.setItem(this.LS_MEETINGS, JSON.stringify([]));
   }
 
-  // Synchronize entire workspace with central cloud database
+  // Synchronize entire workspace with central cloud database & Auto-Hydrate on container restart
   syncWithCloud(): void {
+    const user = this.getCurrentUser();
+    
+    // 1. Sync & Re-hydrate Work Entries
     this.http.get<ApiResponse<PagedResult<WorkEntry>>>(`${this.baseUrl}/work-entries?pageSize=1000`).subscribe({
       next: (res) => {
-        if (res.success && res.data && res.data.items) {
-          const currentLocal: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
-          const cloudItems = res.data.items;
+        const currentLocal: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
+        if (res.success && res.data) {
+          const cloudItems = res.data.items || [];
+          
+          // Re-hydrate cloud if container restarted and is missing historical local entries
+          const missingInCloud = currentLocal.filter(l => 
+            !cloudItems.some(c => c.workEntryId === l.workEntryId || (c.taskNumber === l.taskNumber && (c.workDate || '').substring(0, 10) === (l.workDate || '').substring(0, 10)))
+          );
+
+          if (missingInCloud.length > 0) {
+            missingInCloud.forEach(entry => {
+              this.http.post(`${this.baseUrl}/work-entries`, {
+                ...entry,
+                employeeId: entry.employeeId || user?.employeeId || 1
+              }).subscribe();
+            });
+          }
+
+          // Merge cloud items into local state
           const merged = [...cloudItems];
           currentLocal.forEach(l => {
-            if (!merged.some(m => m.workEntryId === l.workEntryId || (m.taskNumber === l.taskNumber && m.workDate === l.workDate))) {
+            if (!merged.some(m => m.workEntryId === l.workEntryId || (m.taskNumber === l.taskNumber && (m.workDate || '').substring(0, 10) === (l.workDate || '').substring(0, 10)))) {
               merged.push(l);
             }
           });
           localStorage.setItem(this.LS_ENTRIES, JSON.stringify(merged));
+        }
+      },
+      error: () => {}
+    });
+
+    // 2. Sync & Re-hydrate Meetings Master
+    this.http.get<ApiResponse<Meeting[]>>(`${this.baseUrl}/meetings`).subscribe({
+      next: (res) => {
+        const localMeets: Meeting[] = JSON.parse(localStorage.getItem(this.LS_MEETINGS) || '[]');
+        if (res.success && res.data) {
+          const cloudMeets = res.data || [];
+          const missingMeets = localMeets.filter(l => 
+            !cloudMeets.some(c => c.meetingName.trim().toLowerCase() === l.meetingName.trim().toLowerCase())
+          );
+          missingMeets.forEach(m => {
+            this.http.post(`${this.baseUrl}/meetings`, m).subscribe();
+          });
         }
       },
       error: () => {}
