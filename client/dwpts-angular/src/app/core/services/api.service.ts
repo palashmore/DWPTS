@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { ApiResponse, DailyWorkScreen, PagedResult, WorkEntry, WorkItem, WorkItemTimeline, Category, Meeting, MeetingAnalysis, Holiday, Leave, CalendarMonth, DashboardSummary, WeeklyReport, MonthlyReport, YearlyReport, ImportPreview, ImportResult, UserProfile } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
@@ -199,13 +199,43 @@ export class ApiService {
     }
 
     return this.http.get<ApiResponse<DailyWorkScreen>>(`${this.baseUrl}/work-entries/daily`, { params }).pipe(
-      tap(res => {
+      map(res => {
+        const localScreen = getLocalScreen();
         if (res.success && res.data) {
+          const serverEntries = res.data.entries || [];
           const allEntries: WorkEntry[] = JSON.parse(localStorage.getItem(this.LS_ENTRIES) || '[]');
           const otherDays = allEntries.filter(e => (e.workDate || '').substring(0, 10) !== targetDate);
-          const currentDayEntries = res.data.entries || [];
-          localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...currentDayEntries, ...otherDays]));
+          const localDayEntries = allEntries.filter(e => (e.workDate || '').substring(0, 10) === targetDate);
+
+          const mergedDayEntries = [...serverEntries];
+          localDayEntries.forEach(l => {
+            if (!mergedDayEntries.some(m => m.workEntryId === l.workEntryId || (m.taskNumber === l.taskNumber && m.description === l.description))) {
+              mergedDayEntries.push(l);
+              this.http.post<ApiResponse<WorkEntry>>(`${this.baseUrl}/work-entries`, { ...l, employeeId: user?.employeeId || 1 }).subscribe();
+            }
+          });
+
+          localStorage.setItem(this.LS_ENTRIES, JSON.stringify([...mergedDayEntries, ...otherDays]));
+
+          if (mergedDayEntries.length > 0 && serverEntries.length === 0) {
+            return { success: true, message: 'Loaded resilient daily work', data: localScreen };
+          }
+
+          if (mergedDayEntries.length > serverEntries.length) {
+            res.data.entries = mergedDayEntries;
+            const totalWork = mergedDayEntries.reduce((sum, e) => sum + (e.workEffortHours || 0), 0);
+            const totalMeeting = mergedDayEntries.reduce((sum, e) => sum + (e.meetingEffortHours || 0), 0);
+            const totalActual = totalWork + totalMeeting;
+            res.data.totalWorkHours = totalWork;
+            res.data.totalMeetingHours = totalMeeting;
+            res.data.totalActualHours = totalActual;
+            res.data.remainingCapacityHours = Math.max(0, (res.data.dailyCapacityHours || 8) - totalActual);
+            res.data.overtimeHours = Math.max(0, totalActual - (res.data.dailyCapacityHours || 8));
+            res.data.utilizationPercentage = (res.data.dailyCapacityHours || 8) > 0 ? Math.round((totalActual / (res.data.dailyCapacityHours || 8)) * 100) : 0;
+            res.data.isOverCapacity = totalActual > (res.data.dailyCapacityHours || 8);
+          }
         }
+        return res;
       }),
       catchError(() => of({ success: true, message: 'Loaded local sync data', data: getLocalScreen() }))
     );
