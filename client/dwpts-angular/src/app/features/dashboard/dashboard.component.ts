@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
-import { SignalRService } from '../../core/services/signalr.service';
-import { DashboardSummary, WorkEntry } from '../../core/models/models';
-import { Subscription } from 'rxjs';
+import { DashboardSummary } from '../../core/models/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -148,12 +146,12 @@ import { Subscription } from 'rxjs';
           <div class="card-header flex-between">
             <div>
               <h3>7-Day Engineering & Meeting Velocity</h3>
-              <span class="subtitle">Daily Work & Meeting effort trajectory across this sprint</span>
+              <span class="subtitle">Daily Work & Meeting effort trajectory across this week</span>
             </div>
             <div class="bar-legend">
-              <span class="legend-item"><span class="color-dot work-dot"></span> Work Effort</span>
-              <span class="legend-item"><span class="color-dot meeting-dot"></span> Meeting Effort</span>
-              <span class="legend-item"><span class="cap-line-dot"></span> 8h Limit</span>
+              <span class="legend-item"><span class="color-dot work-dot"></span> Work</span>
+              <span class="legend-item"><span class="color-dot meeting-dot"></span> Meetings</span>
+              <span class="legend-item"><span class="cap-line-dot"></span> 8h Target</span>
             </div>
           </div>
 
@@ -163,13 +161,13 @@ import { Subscription } from 'rxjs';
             </div>
 
             <div class="trend-bars-deck">
-              <div class="bar-column" *ngFor="let item of data.dailyEffortTrend" (click)="openDateInDailyWork(item.date)">
+              <div class="bar-column" *ngFor="let item of data.dailyEffortTrend" (click)="openDateInDailyWork(item.label)">
                 <div class="bar-top-hours" [ngClass]="{'has-hours': item.totalHours > 0}">{{ item.totalHours }}h</div>
                 <div class="stacked-bar-track">
                   <div class="stacked-meeting-fill" [style.height.%]="(item.meetingHours / 10) * 100" [title]="'Meetings: ' + item.meetingHours + 'h'"></div>
                   <div class="stacked-work-fill" [style.height.%]="(item.workHours / 10) * 100" [title]="'Work: ' + item.workHours + 'h'"></div>
                 </div>
-                <div class="bar-day-label" [ngClass]="{'today-label': isToday(item.date)}">
+                <div class="bar-day-label">
                   {{ item.label }}
                 </div>
               </div>
@@ -245,7 +243,7 @@ import { Subscription } from 'rxjs';
       <div class="dwpts-card table-card">
         <div class="card-header flex-between">
           <div>
-            <h3>Today's Work Entries ({{ data.todayEntries?.length || 0 }})</h3>
+            <h3>Today's Work Entries ({{ data.todayEntries.length }})</h3>
             <span class="subtitle">Live active tasks, meeting durations, and progress records for today</span>
           </div>
           <div class="header-table-actions">
@@ -292,7 +290,7 @@ import { Subscription } from 'rxjs';
                 <td><span class="remarks-cell">{{ e.remarks || '-' }}</span></td>
               </tr>
 
-              <tr *ngIf="!data.todayEntries || data.todayEntries.length === 0">
+              <tr *ngIf="data.todayEntries.length === 0">
                 <td colspan="9" class="empty-table-cell">
                   <div class="empty-state-box">
                     <div class="empty-icon">📝</div>
@@ -595,13 +593,6 @@ import { Subscription } from 'rxjs';
       font-weight: 700;
       color: var(--text-muted);
     }
-    .bar-day-label.today-label {
-      color: var(--text-gold);
-      font-weight: 800;
-      background: rgba(212, 175, 55, 0.1);
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
 
     /* Right Stack */
     .right-panel-stack {
@@ -706,28 +697,18 @@ import { Subscription } from 'rxjs';
     }
   `]
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit {
   data: DashboardSummary | null = null;
   Math = Math;
-  private signalRSub?: Subscription;
 
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private signalR: SignalRService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.loadDashboard();
-
-    this.signalRSub = this.signalR.workEntryUpdated$.subscribe(() => {
-      this.loadDashboard();
-    });
-  }
-
-  ngOnDestroy() {
-    this.signalRSub?.unsubscribe();
   }
 
   get todayDayName(): string {
@@ -736,9 +717,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   loadDashboard() {
     const today = new Date().toISOString().substring(0, 10);
-    this.api.getDashboardSummary(today).subscribe({
-      next: res => {
-        if (res.success && res.data) {
+    this.api.getDashboard(today).subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.data) {
           this.data = res.data;
         }
       },
@@ -772,15 +753,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return 'Overtime';
   }
 
-  isToday(dateStr: string): boolean {
-    if (!dateStr) return false;
-    const today = new Date().toISOString().substring(0, 10);
-    return dateStr.substring(0, 10) === today;
-  }
-
-  openDateInDailyWork(dateStr: string) {
-    if (!dateStr) return;
-    this.router.navigate(['/daily-work'], { queryParams: { date: dateStr.substring(0, 10) } });
+  openDateInDailyWork(dayLabel: string) {
+    this.router.navigate(['/daily-work']);
   }
 
   goToDailyWork() {
